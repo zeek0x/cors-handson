@@ -4,13 +4,15 @@
 
 このハンズオンでは、ブラウザにおけるCORSの挙動をサーバとなるPythonコードをいじりながら理解していくことを目的としています。このハンズオンでは、CORSについてざっくりとした解説しかしないため、より詳細を知りたい方はMDNの[オリジン間リソース共有 (CORS)](https://developer.mozilla.org/ja/docs/Web/HTTP/CORS)を参照することをお奨めします。
 
-## CORS
+## CORSの種類
 
-Cross-Origin Resource Sharing (CORS) は、ブラウザ上で動作するスクリプトが異なるオリジンのリソースとやり取りできるようにするためのプロトコルです。
+まずは、手を動かす前にCORSの種類についてだけみていきましょう。
+
+Cross-Origin Resource Sharing (CORS) とは、ブラウザ上で動作するスクリプトが、異なるオリジンのリソースをやり取りできるようにするためのプロトコルです。
 
 オリジンとは: [Origin (オリジン)](https://developer.mozilla.org/ja/docs/Glossary/Origin)
 
-CORSは、リクエストの特性によって次のどちらかの動作をします。
+CORSは、リクエストの条件によって次のどちらかの動作をします。
 
 - 単純リクエスト(Simple Requests)
 - プリフライトリクエスト(Preflight requests)
@@ -21,3 +23,75 @@ CORSは、リクエストの特性によって次のどちらかの動作をし�
 |---|---|
 |メソッドが以下の中に含まれる|<ul><li>`GET`</li><li>`HEAD`</li><li>`POST`</li></ul>|
 |独自で設定するヘッダーが以下の中に含まれる|<ul><li>`Accept`</li><li>`Accept-Language`</li><li>`Content-Length`</li><li>`Content-Type`(以下の値のみ)<ul><li>`application/x-www-form-urlencoded`</li><li>`multipart/form-data`</li><li>` text/plain`</li></ul></ul>|
+
+さて、いつまでも説明をしていても退屈なので手を動かしてみましょう。
+
+## 単純リクエストハンズオン
+
+単純リクエストでは、ブラウザからAPIを呼び出した時点でクライアント・サーバ間でデータのやり取りが行われます。
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Server
+    Client->>Server: GET / HTTP/1.1
+    Server->>Client: HTTP /1.1 200 OK
+```
+
+このリクエストがどうなっているかを、手元でサーバを立ててブラウザからの通信をみてみます。
+
+以下のコードを`srv.py`として保存しましょう。
+
+```python
+from http.server import HTTPServer, SimpleHTTPRequestHandler
+
+class CORSRequestHandler(SimpleHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b'Hello CORS!')
+        return
+
+httpd = HTTPServer(('localhost', 8003), CORSRequestHandler)
+httpd.serve_forever()
+```
+
+保存したら、手元のコンソールから`python3 srv.py`のようにサーバを起動します。まずは動作確認として、そのまま`http://localhost:8003`をブラウザで開いてみましょう。
+`Hello CORS!` が表示されれば動作確認完了です。
+
+次に、ブラウザで`https://example.com`を開き、デベロッパーツールを開きます。そのまま以下のコードを、デベロッパーツールに入れて実行しましょう。
+
+```javascript
+let url = `http://localhost:8003`
+await fetch(url)
+```
+
+いよいよ初めてのCORSリクエストです。結果はどうなるでしょうか？
+
+![](./20_simple_request_failed_error_message.png)
+
+なんと！初めてのCORSリクエストは失敗してしまいました!落ち着いてエラーメッセージを読んでみましょう。
+
+> オリジン 'https://example.com' からの 'http://localhost:8003/' でのfetchへのアクセスは、CORS ポリシーによってブロックされました。要求されたリソースに 'Access-Control-Allow-Origin' ヘッダーが存在しません。opaque responseが必要な場合は、リクエストのmodeに'no-cors'を設定して、CORSを無効にしてリソースをフェッチしてください。
+
+何やらレスポンスに `Access-Control-Allow-Origin`ヘッダーがないため`fetch`へのアクセスがブロックされたとあります。
+
+（fetchメソッドにおいて'no-cors'を設定したopaque responseは、リクエストが失敗したときに空のレスポンスを返すことを意味します。詳しくはMDNの[Fetch API](https://developer.mozilla.org/ja/docs/Web/API/Fetch_API)を参照してください。）
+
+サーバのログを見ると、サーバ側では正常にリクエストが処理されたようです。
+
+```console
+127.0.0.1 - - [10/Aug/2022 11:45:14] "GET / HTTP/1.1" 200 -
+```
+
+デベロッパーツールのNetworkタブを見るとリクエスト・レスポンスにどのようなヘッダーがあったかを見ることができます。
+
+![](./21_simple_request_failed_header_context.png)
+
+確かにレスポンスには`Access-Control-Allow-Origin`がないようです。それでは、サーバに`Access-Control-Allow-Origin`ヘッダーを追加する処理を記述してみましょう。
+
+
+# 参考
+
+- [CORS Tutorial: A Guide to Cross-Origin Resource Sharing](https://auth0.com/blog/cors-tutorial-a-guide-to-cross-origin-resource-sharing/)
+- [Python 3: serve the current directory as HTTP while setting CORS headers for XHR debugging](https://gist.github.com/acdha/925e9ffc3d74ad59c3ea)
