@@ -62,7 +62,7 @@ httpd.serve_forever()
 次に、ブラウザで`https://example.com`を開き、デベロッパーツールを開きます。そのまま以下のコードを、デベロッパーツールに入れて実行しましょう。
 
 ```javascript
-let url = `http://localhost:8003`
+let url = 'http://localhost:8003'
 await fetch(url)
 ```
 
@@ -88,8 +88,41 @@ await fetch(url)
 
 ![](./21_simple_request_failed_header_context.png)
 
-確かにレスポンスには`Access-Control-Allow-Origin`がないようです。それでは、サーバに`Access-Control-Allow-Origin`ヘッダーを追加する処理を記述してみましょう。
+確かにレスポンスには`Access-Control-Allow-Origin`がないようです。MDNでは[`Access-Control-Allow-Origin`](https://developer.mozilla.org/ja/docs/Web/HTTP/Headers/Access-Control-Allow-Origin)が、以下のように説明されます。
 
+> `Access-Control-Allow-Origin`レスポンスヘッダーは、指定されたオリジンからのリクエストを行うコードでレスポンスが共有できるかどうかを示します。
+
+指定されたオリジンというのは、リクエストの`Origin`ヘッダーの値のことです。画像の例では`https://example.com`ページを開き、外部オリジンの`http://localhost:8003`にリクエストを送信するときに、`Origin`ヘッダーの値は`https://example.com`となっております。
+
+それでは、サーバに`Access-Control-Allow-Origin`ヘッダーを追加する処理を記述してみましょう。
+
+```diff
+     def do_GET(self):
+         self.send_response(200)
++        self.send_header('Access-Control-Allow-Origin', '*')
+         self.end_headers()
+         self.wfile.write(b'Hello CORS!')
+         return
+```
+
+`*`というのは`Origin`リクエストヘッダーがどのような値であったとしても、ブラウザ側でブロックしなくて良いことを示しています。
+
+修正が完了し、サーバを再起動したら、先ほどと同様に`fetch`を呼び出してみましょう。
+
+```javascript
+let url = 'http://localhost:8003'
+await fetch(url)
+```
+
+![](./22_simple_request_first_success.png)
+
+初めてCORSに成功しました！以下のコードで再度実行すれば中身を取り出すこともできます。
+
+```javascript
+await (await fetch(url)).text()
+```
+
+![](./23_simple_request_get_text.png)
 
 # 参考
 
