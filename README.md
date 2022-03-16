@@ -1,10 +1,10 @@
 # CORSハンズオン
 
-## 読者へ
+## 0. 読者へ
 
 このハンズオンでは、ブラウザにおけるCORSの挙動をサーバとなるPythonコードをいじりながら理解していくことを目的としています。このハンズオンでは、CORSについてざっくりとした解説しかしないため、より詳細を知りたい方はMDNの[オリジン間リソース共有 (CORS)](https://developer.mozilla.org/ja/docs/Web/HTTP/CORS)を参照することをお奨めします。
 
-## CORSの種類
+## 1. CORSの種類
 
 まずは、手を動かす前にCORSの種類についてだけみていきましょう。
 
@@ -24,7 +24,7 @@ CORSは、リクエストの条件によって次のどちらかの動作をし�
 
 さて、いつまでも説明をしていると退屈なので、手を動かしましょう。
 
-## 単純リクエストハンズオン
+## 2. 単純リクエストハンズオン
 
 単純リクエストでは、ブラウザから外部リソースへのリクエストAPIを呼び出した時点でクライアント・サーバ間でデータのやり取りが行われます。
 
@@ -68,7 +68,7 @@ await fetch(url)
 
 いよいよ初めてのCORSリクエストです。結果はどうなるでしょうか？
 
-![](./20_simple_request_failed_error_message.png)
+![](./img/02-01-simple-request-failed-error_message.png)
 
 なんと！初めてのCORSリクエストは失敗してしまいました！落ち着いてエラーメッセージを読んでみましょう。
 
@@ -86,7 +86,7 @@ await fetch(url)
 
 デベロッパーツールのNetworkタブを見るとリクエスト・レスポンスにどのようなヘッダーがあったかを見ることができます。
 
-![](./21_simple_request_failed_header_context.png)
+![](./img/02-02-simple-request-failed-header-context.png)
 
 確かにレスポンスには`Access-Control-Allow-Origin`がありません。MDNでは[`Access-Control-Allow-Origin`](https://developer.mozilla.org/ja/docs/Web/HTTP/Headers/Access-Control-Allow-Origin)が、以下のように説明されます。
 
@@ -114,7 +114,7 @@ let url = 'http://localhost:8003'
 await fetch(url)
 ```
 
-![](./22_simple_request_first_success.png)
+![](./img/02-03-simple-request-first-success.png)
 
 初めてのCORSに成功しました！以下のコードで再度実行すれば中身を取り出すこともできます。
 
@@ -122,7 +122,7 @@ await fetch(url)
 await (await fetch(url)).text()
 ```
 
-![](./23_simple_request_get_text.png)
+![](./img/02-04-simple-request-get-text.png)
 
 # 参考
 
