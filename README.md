@@ -68,7 +68,7 @@ await fetch(url)
 
 いよいよ初めてのCORSリクエストです。結果はどうなるでしょうか？
 
-![](./img/02-01-simple-request-failed-error_message.png)
+![](./img/simple-request-failed-error_message.png)
 
 なんと！初めてのCORSリクエストは失敗してしまいました！落ち着いてエラーメッセージを読んでみましょう。
 
@@ -86,7 +86,7 @@ await fetch(url)
 
 デベロッパーツールのNetworkタブを見るとリクエスト・レスポンスにどのようなヘッダーがあったかを見ることができます。
 
-![](./img/02-02-simple-request-failed-header-context.png)
+![](./img/simple-request-failed-header-context.png)
 
 確かにレスポンスには`Access-Control-Allow-Origin`がありません。MDNでは[`Access-Control-Allow-Origin`](https://developer.mozilla.org/ja/docs/Web/HTTP/Headers/Access-Control-Allow-Origin)が、以下のように説明されます。
 
@@ -114,7 +114,7 @@ let url = 'http://localhost:8003'
 await fetch(url)
 ```
 
-![](./img/02-03-simple-request-first-success.png)
+![](./img/simple-request-first-success.png)
 
 初めてのCORSに成功しました！以下のコードで再度実行すれば中身を取り出すこともできます。
 
@@ -122,7 +122,7 @@ await fetch(url)
 await (await fetch(url)).text()
 ```
 
-![](./img/02-04-simple-request-get-text.png)
+![](./img/simple-request-get-text.png)
 
 # 参考
 
