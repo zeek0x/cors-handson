@@ -59,6 +59,8 @@ httpd.serve_forever()
 保存したら、手元のコンソールから`python3 srv.py`のようにサーバを起動します。まずは動作確認として、そのまま`http://localhost:8003`をブラウザで開いてみましょう。
 `Hello CORS!` が表示されれば動作確認完了です。
 
+![](./img/srv-operation-test.png)
+
 次に、ブラウザで`https://example.com`を開き、デベロッパーツールを開きます。そのまま以下のコードを、デベロッパーツールに入れて実行しましょう。
 
 ```javascript
