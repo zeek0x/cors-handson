@@ -68,11 +68,13 @@ let url = 'http://localhost:8003'
 await fetch(url)
 ```
 
+![](./img/example-com-page-and-devloper-tool.png)
+
 いよいよ初めてのCORSリクエストです。結果はどうなるでしょうか？
 
-![](./img/simple-request-failed-error_message.png)
+![](./img/simple-request-failed-error-message.png)
 
-なんと！初めてのCORSリクエストは失敗してしまいました！落ち着いてエラーメッセージを読んでみましょう。
+なんと！初めてのCORSは失敗に終わってしまいました！落ち着いてエラーメッセージを読んでみましょう。
 
 > オリジン 'https://example.com' からの 'http://localhost:8003/' でのfetchへのアクセスは、CORS ポリシーによってブロックされました。要求されたリソースに 'Access-Control-Allow-Origin' ヘッダーが存在しません。opaque responseが必要な場合は、リクエストのmodeに'no-cors'を設定して、CORSを無効にしてリソースをフェッチしてください。
 
