@@ -8,27 +8,27 @@
 
 まずは、手を動かす前にCORSの種類についてだけみていきましょう。
 
-Cross-Origin Resource Sharing (CORS) とは、ブラウザ上で動作するスクリプトが、異なるオリジンのリソースをやり取りできるようにするためのプロトコルです。
-
-オリジンとは: [Origin (オリジン)](https://developer.mozilla.org/ja/docs/Glossary/Origin)
+Cross-Origin Resource Sharing (CORS) とは、ブラウザ上で動作するスクリプトが、異なるオリジンのリソースをやり取りできるようにするためのプロトコルです。オリジンについては後述します。
 
 CORSは、リクエストの条件によって次のどちらかの動作をします。
 
 - 単純リクエスト(Simple Requests)
 - プリフライトリクエスト(Preflight requests)
 
-以下の両方の条件を満たすと単純リクエストとなります。
+以下の両方の条件を満たすと単純リクエストとなり、満たさないとプリフライトリクエストとなります。
 
 |条件|項目|
 |---|---|
 |メソッドが以下の中に含まれる|<ul><li>`GET`</li><li>`HEAD`</li><li>`POST`</li></ul>|
 |独自で設定するヘッダーが以下の中に含まれる|<ul><li>`Accept`</li><li>`Accept-Language`</li><li>`Content-Length`</li><li>`Content-Type`(以下の値のみ)<ul><li>`application/x-www-form-urlencoded`</li><li>`multipart/form-data`</li><li>` text/plain`</li></ul></ul>|
 
-さて、いつまでも説明をしていても退屈なので手を動かしてみましょう。
+さて、いつまでも説明をしていると退屈なので、手を動かしましょう。
 
 ## 単純リクエストハンズオン
 
-単純リクエストでは、ブラウザからAPIを呼び出した時点でクライアント・サーバ間でデータのやり取りが行われます。
+単純リクエストでは、ブラウザから外部リソースへのリクエストAPIを呼び出した時点でクライアント・サーバ間でデータのやり取りが行われます。
+
+<!-- TODO: もうちょっとわかりやすい図にする -->
 
 ```mermaid
 sequenceDiagram
@@ -70,11 +70,11 @@ await fetch(url)
 
 ![](./20_simple_request_failed_error_message.png)
 
-なんと！初めてのCORSリクエストは失敗してしまいました!落ち着いてエラーメッセージを読んでみましょう。
+なんと！初めてのCORSリクエストは失敗してしまいました！落ち着いてエラーメッセージを読んでみましょう。
 
 > オリジン 'https://example.com' からの 'http://localhost:8003/' でのfetchへのアクセスは、CORS ポリシーによってブロックされました。要求されたリソースに 'Access-Control-Allow-Origin' ヘッダーが存在しません。opaque responseが必要な場合は、リクエストのmodeに'no-cors'を設定して、CORSを無効にしてリソースをフェッチしてください。
 
-何やらレスポンスに `Access-Control-Allow-Origin`ヘッダーがないため`fetch`へのアクセスがブロックされたとあります。
+何やらレスポンスに`Access-Control-Allow-Origin`ヘッダーがないため`fetch`へのアクセスがブロックされたとあります。
 
 （fetchメソッドにおいて'no-cors'を設定したopaque responseは、リクエストが失敗したときに空のレスポンスを返すことを意味します。詳しくはMDNの[Fetch API](https://developer.mozilla.org/ja/docs/Web/API/Fetch_API)を参照してください。）
 
@@ -88,11 +88,11 @@ await fetch(url)
 
 ![](./21_simple_request_failed_header_context.png)
 
-確かにレスポンスには`Access-Control-Allow-Origin`がないようです。MDNでは[`Access-Control-Allow-Origin`](https://developer.mozilla.org/ja/docs/Web/HTTP/Headers/Access-Control-Allow-Origin)が、以下のように説明されます。
+確かにレスポンスには`Access-Control-Allow-Origin`がありません。MDNでは[`Access-Control-Allow-Origin`](https://developer.mozilla.org/ja/docs/Web/HTTP/Headers/Access-Control-Allow-Origin)が、以下のように説明されます。
 
 > `Access-Control-Allow-Origin`レスポンスヘッダーは、指定されたオリジンからのリクエストを行うコードでレスポンスが共有できるかどうかを示します。
 
-指定されたオリジンというのは、リクエストの`Origin`ヘッダーの値のことです。画像の例では`https://example.com`ページを開き、外部オリジンの`http://localhost:8003`にリクエストを送信するときに、`Origin`ヘッダーの値は`https://example.com`となっております。
+指定されたオリジンというのは、`Origin`リクエストヘッダーの値のことです。画像の例では`https://example.com`ページを開き、外部オリジンの`http://localhost:8003`にリクエストを送信するときに、`Origin`ヘッダーの値は`https://example.com`となっております。詳しくは[Origin (オリジン)](https://developer.mozilla.org/ja/docs/Glossary/Origin)を参照してください。
 
 それでは、サーバに`Access-Control-Allow-Origin`ヘッダーを追加する処理を記述してみましょう。
 
@@ -107,7 +107,7 @@ await fetch(url)
 
 `*`というのは`Origin`リクエストヘッダーがどのような値であったとしても、ブラウザ側でブロックしなくて良いことを示しています。
 
-修正が完了し、サーバを再起動したら、先ほどと同様に`fetch`を呼び出してみましょう。
+修正が完了してサーバを再起動したら、先ほどと同様に`fetch`メソッドを呼び出してみましょう。
 
 ```javascript
 let url = 'http://localhost:8003'
@@ -116,7 +116,7 @@ await fetch(url)
 
 ![](./22_simple_request_first_success.png)
 
-初めてCORSに成功しました！以下のコードで再度実行すれば中身を取り出すこともできます。
+初めてのCORSに成功しました！以下のコードで再度実行すれば中身を取り出すこともできます。
 
 ```javascript
 await (await fetch(url)).text()
