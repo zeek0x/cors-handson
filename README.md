@@ -109,7 +109,7 @@ await fetch(url)
          return
 ```
 
-`*`というのは`Origin`リクエストヘッダーがどのような値であったとしても、ブラウザ側でブロックしなくて良いことを示しています。
+`*`（ワイルドカード）というのは`Origin`リクエストヘッダーがどのような値であったとしても、ブラウザ側でブロックしなくて良いことを示しています。
 
 修正が完了してサーバを再起動したら、先ほどと同様に`fetch`メソッドを呼び出してみましょう。
 
@@ -128,7 +128,30 @@ await (await fetch(url)).text()
 
 ![](./img/simple-request-get-text.png)
 
+## 3. アクセスを許可するオリジン
+
+では、`Access-Control-Allow-Origin`レスポンスヘッダーに`*`を設定し、任意のオリジンからのリクエストを許可していました。この章では、オリジンによってアクセスの許可を出し分けてみましょう。
+
+サーバ側で許可するオリジンであった場合には、　`Origin` リクエストヘッダーの値を `Access-Control-Allow-Origin` に設定して返します。
+
+では、サーバ側で許可しないオリジンであった場合はどうすると良いでしょうか？実は、この時の動作は[Cross-Origin Resource Sharing W3C Recommendation 16 January 2014 supserseded 2 June 2020](https://www.w3.org/TR/2020/SPSD-cors-20200602/)及び[The Web Origin Concept](https://datatracker.ietf.org/doc/html/rfc6454)で定義されません。
+
+[What is the expected response to an invalid CORS request?](https://stackoverflow.com/questions/14015118/what-is-the-expected-response-to-an-invalid-cors-request)にあるように、動作には2つの派閥があるようです。
+
+- サーバ側でCORSヘッダーを検査し、レスポンスにエラー（4xx）を返す
+- レスポンスは正常に返し、クライアントにCORSヘッダーを検査させる
+
+```mermaid
+flowchart
+
+B["Origin が設定されている\nかつ\n許可されるオリジである"]
+B -- Yes --> C[Access-Control-Origin-Header に Origin の値を\n設定してレスポンスヘッダーに追加する]
+C --> D[レスポンスを返す]
+B -- No --> D
+```
+
 # 参考
 
 - [CORS Tutorial: A Guide to Cross-Origin Resource Sharing](https://auth0.com/blog/cors-tutorial-a-guide-to-cross-origin-resource-sharing/)
 - [Python 3: serve the current directory as HTTP while setting CORS headers for XHR debugging](https://gist.github.com/acdha/925e9ffc3d74ad59c3ea)
+-
