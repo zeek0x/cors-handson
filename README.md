@@ -4,6 +4,8 @@
 
 このハンズオンでは、ブラウザにおけるCORSの挙動をサーバとなるPythonコードをいじりながら理解していくことを目的としています。このハンズオンでは、CORSについてざっくりとした解説しかしないため、より詳細を知りたい方はMDNの[オリジン間リソース共有 (CORS)](https://developer.mozilla.org/ja/docs/Web/HTTP/CORS)を参照することをお奨めします。
 
+また、誤植や追記、内容の訂正などどんなPRを歓迎しています。説明文に一次情報を添えて変更を下さると嬉しいです。
+
 ## 1. CORSの種類
 
 まずは、手を動かす前にCORSの種類についてだけみていきましょう。
@@ -130,9 +132,9 @@ await (await fetch(url)).text()
 
 ## 3. アクセスを許可するオリジン
 
-では、`Access-Control-Allow-Origin`レスポンスヘッダーに`*`を設定し、任意のオリジンからのリクエストを許可していました。この章では、オリジンによってアクセスの許可を出し分けてみましょう。
+`Access-Control-Allow-Origin`レスポンスヘッダーに`*`を設定し、任意のオリジンからのリクエストを許可していました。この章では、オリジンによってアクセスの許可を出し分けてみましょう。
 
-サーバ側で許可するオリジンであった場合には、　`Origin` リクエストヘッダーの値を `Access-Control-Allow-Origin` に設定して返します。
+サーバ側で許可するオリジンであった場合には、`Origin`リクエストヘッダーの値を`Access-Control-Allow-Origin`に設定して返します。
 
 では、サーバ側で許可しないオリジンであった場合はどうすると良いでしょうか？実は、この時の動作は[Cross-Origin Resource Sharing W3C Recommendation 16 January 2014 supserseded 2 June 2020](https://www.w3.org/TR/2020/SPSD-cors-20200602/)及び[The Web Origin Concept](https://datatracker.ietf.org/doc/html/rfc6454)で定義されません。
 
