@@ -145,13 +145,15 @@ await (await fetch(url)).text()
 
 このハンズオンでは、`Access-Control-Origin-Header`レスポンスヘッダーに許可されるオリジンのリスト（`,`区切り）を設定して返すこととします。この実装は実際にデバッグの際に役立ちますが、副作用を伴うリクエストのレスポンスには向いていません。
 
+想定する動作は次のようになります。
+
 ```mermaid
 flowchart
 
-A["Origin が設定されているおり、\n許可されるオリジである"]
+A["Origin が設定されており、\n許可されるオリジンである"]
 B[Access-Control-Origin-Header に Origin の値を\n設定してレスポンスヘッダーに追加する]
 C[Access-Control-Origin-Header に 許可される Origin のリストを\n設定してレスポンスヘッダーに追加する]
-D[レスポンスを返す]
+D[2xxレスポンスを返す]
 
 A -- Yes --> B --> D
 A -- No --> C --> D
@@ -161,4 +163,3 @@ A -- No --> C --> D
 
 - [CORS Tutorial: A Guide to Cross-Origin Resource Sharing](https://auth0.com/blog/cors-tutorial-a-guide-to-cross-origin-resource-sharing/)
 - [Python 3: serve the current directory as HTTP while setting CORS headers for XHR debugging](https://gist.github.com/acdha/925e9ffc3d74ad59c3ea)
--
