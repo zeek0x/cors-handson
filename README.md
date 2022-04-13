@@ -159,6 +159,26 @@ A -- Yes --> B --> D
 A -- No --> C --> D
 ```
 
+想定する動作に従って`srv.py`に変更を加えます。
+
+```diff
+class CORSRequestHandler(SimpleHTTPRequestHandler):
++    valid_origin_list = ['https://example.com', 'https://exmaple.net']
++
++    def is_valid_origin(self, origin):
++        return origin in self.valid_origin_list
++
+     def do_GET(self):
+         self.send_response(200)
+-        self.send_header('Access-Control-Allow-Origin', '*')
++        origin = self.headers['Origin']
++        acao = origin if self.is_valid_origin(origin) else ','.join(self.valid_origin_list)
++        self.send_header('Access-Control-Allow-Origin', acao)
+         self.end_headers()
+         self.wfile.write(b'Hello CORS!')
+         return
+```
+
 # 参考
 
 - [CORS Tutorial: A Guide to Cross-Origin Resource Sharing](https://auth0.com/blog/cors-tutorial-a-guide-to-cross-origin-resource-sharing/)
