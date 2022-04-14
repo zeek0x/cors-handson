@@ -179,6 +179,48 @@ class CORSRequestHandler(SimpleHTTPRequestHandler):
          return
 ```
 
+忘れずにサーバを再起動し、`https://example.com`を開いて、コンソールから以下を実行します。
+
+```javascript
+let url = 'http://localhost:8003'
+await fetch(url)
+```
+
+![](./img/validate-origin-fetch-success-console.png)
+
+`fetch`メソッドの実行は成功します。
+
+Networkタブを見てみると`Origin`リクエストヘッダーの値と`Access-Control-Allow-Origin`の値が同一になっていることが分かります。
+
+![](./img/validate-origin-fetch-success-network.png)
+
+次に、許可されてないオリジンからリクエストを送信してみます。`https://example.org`を開いて、同じようにコンソールで以下のコードを実行します。
+
+```javascript
+let url = 'http://localhost:8003'
+await fetch(url)
+```
+
+![](img/validate-origin-fetch-error-console.png)
+
+> オリジン 'https://example.org' からの 'http://localhost:8003/' での fetch へのアクセスは、CORS ポリシーによってブロックされました。Access-Control-Allow-Origin ヘッダーに複数の値「https://example.com,https://exmaple.net」が含まれていますが、許可されるのは1つだけです。サーバーに有効な値のヘッダーを送信させるか、不透明な応答が必要な場合は、要求のモードを「no-cors」に設定して、CORSを無効にしてリソースをフェッチしてください。
+
+`fetch`メソッドの実行は失敗し、エラーメッセージには、`Access-Control-Allow-Origin` ヘッダーに複数のオリジンが含まれているという理由で失敗しています。
+
+実際に、Networkタブをみると `Access-Control-Allow-Origin` レスポンスヘッダーには複数のオリジン `https://example.com,https://exmaple.net` が含まれていることが分かります。
+
+![](img/validate-origin-fetch-error-network.png)
+
+[Cross-Origin Resource Sharing - 5.1 Access-Control-Allow-Origin Response Header](https://www.w3.org/TR/2020/SPSD-cors-20200602/#access-control-allow-origin-response-header) では  `origin-list-or-null` が定義されていますが、多くのブラウザでは単一のオリジンしか許容しないようになっています。
+
+補足
+
+このハンズオンでは、不正なオリジンを伴うリクエストがきた時に、複数の正しいオリジンのリストを返すよう実装しましたが、単一の正しいオリジンを返すようにすると以下のようになります。
+
+![](img/validate-origin-single-invalid-origin-console.png)
+
+> オリジン 'https://example.org' からの 'http://localhost:8003/' でのフェッチへのアクセスは、CORS ポリシーによってブロックされました。Access-Control-Allow-Origin' ヘッダーの値 'https://example.com' は指定されたオリジンと同じではありません。サーバーに有効な値のヘッダーを送信させるか、不透明な応答が必要な場合は、要求のモードを「no-cors」に設定して、CORS を無効にしてリソースをフェッチしてください。
+
 # 参考
 
 - [CORS Tutorial: A Guide to Cross-Origin Resource Sharing](https://auth0.com/blog/cors-tutorial-a-guide-to-cross-origin-resource-sharing/)
