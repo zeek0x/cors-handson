@@ -143,7 +143,7 @@ await (await fetch(url)).text()
 - サーバ側でCORSヘッダーを検査し、レスポンスにエラー（4xx）を返す
 - レスポンスは正常に返し、クライアントにCORSヘッダーを検査させる
 
-このハンズオンでは、`Access-Control-Origin-Header`レスポンスヘッダーに許可されるオリジンのリスト（`,`区切り）を設定して返すこととします。この実装は実際にデバッグの際に役立ちますが、副作用を伴うリクエストのレスポンスには向いていません。
+このハンズオンでは、`Access-Control-Origin-Header`レスポンスヘッダーに許可されるオリジンのリスト（スペース区切り）を設定して返すこととします。この実装は実際にデバッグの際に役立ちますが、副作用を伴うリクエストのレスポンスには向いていません。
 
 想定する動作は次のようになります。
 
@@ -172,7 +172,7 @@ class CORSRequestHandler(SimpleHTTPRequestHandler):
          self.send_response(200)
 -        self.send_header('Access-Control-Allow-Origin', '*')
 +        origin = self.headers['Origin']
-+        acao = origin if self.is_valid_origin(origin) else ','.join(self.valid_origin_list)
++        acao = origin if self.is_valid_origin(origin) else ' '.join(self.valid_origin_list)
 +        self.send_header('Access-Control-Allow-Origin', acao)
          self.end_headers()
          self.wfile.write(b'Hello CORS!')
@@ -203,23 +203,27 @@ await fetch(url)
 
 ![](img/validate-origin-fetch-error-console.png)
 
-> オリジン 'https://example.org' からの 'http://localhost:8003/' での fetch へのアクセスは、CORS ポリシーによってブロックされました。Access-Control-Allow-Origin ヘッダーに複数の値「https://example.com,https://exmaple.net」が含まれていますが、許可されるのは1つだけです。サーバーに有効な値のヘッダーを送信させるか、不透明な応答が必要な場合は、要求のモードを「no-cors」に設定して、CORSを無効にしてリソースをフェッチしてください。
+> オリジン 'https://example.org' からの 'http://localhost:8003/' での fetch へのアクセスは、CORS ポリシーによってブロックされました。Access-Control-Allow-Origin ヘッダーに複数の値 'https://example.com https://exmaple.net' が含まれていますが、許可されるのは1つだけです。サーバーに有効な値のヘッダーを送信させるか、不透明な応答が必要な場合は、要求のモードを 'no-cors' に設定して、CORSを無効にしてリソースをフェッチしてください。
 
 `fetch`メソッドの実行は失敗し、エラーメッセージには、`Access-Control-Allow-Origin` ヘッダーに複数のオリジンが含まれているという理由で失敗しています。
 
-実際に、Networkタブをみると `Access-Control-Allow-Origin` レスポンスヘッダーには複数のオリジン `https://example.com,https://exmaple.net` が含まれていることが分かります。
+実際に、Networkタブをみると `Access-Control-Allow-Origin` レスポンスヘッダーには複数のオリジン `https://example.com https://exmaple.net` が含まれていることが分かります。
 
 ![](img/validate-origin-fetch-error-network.png)
 
-[Cross-Origin Resource Sharing - 5.1 Access-Control-Allow-Origin Response Header](https://www.w3.org/TR/2020/SPSD-cors-20200602/#access-control-allow-origin-response-header) では  `origin-list-or-null` が定義されていますが、多くのブラウザでは単一のオリジンしか許容しないようになっています。
+[Cross-Origin Resource Sharing - 5.1 Access-Control-Allow-Origin Response Header](https://www.w3.org/TR/2020/SPSD-cors-20200602/#access-control-allow-origin-response-header) では  `origin-list-or-null` が定義されていますが、`Note`に以下のような記述があります。
 
-補足
+> 実際には、origin-list-or-null実装はより制約されています。スペースで区切られたオリジンのリストを許可するのではなく、単一のオリジンまたは文字列 "null" のどちらかを指定します。
 
-このハンズオンでは、不正なオリジンを伴うリクエストがきた時に、複数の正しいオリジンのリストを返すよう実装しましたが、単一の正しいオリジンを返すようにすると以下のようになります。
+多くのブラウザでは単一のオリジンしか許容しないようになっています。
+
+### 3.a 不正な単一オリジン
+
+このハンズオンでは、不正なオリジンを伴うリクエストがきた時に、複数の正しいオリジンのリストを返すよう実装しました。補足として、単一の正しいオリジンを返すようにした場合の結果を以下に示します。
 
 ![](img/validate-origin-single-invalid-origin-console.png)
 
-> オリジン 'https://example.org' からの 'http://localhost:8003/' でのフェッチへのアクセスは、CORS ポリシーによってブロックされました。Access-Control-Allow-Origin' ヘッダーの値 'https://example.com' は指定されたオリジンと同じではありません。サーバーに有効な値のヘッダーを送信させるか、不透明な応答が必要な場合は、要求のモードを「no-cors」に設定して、CORS を無効にしてリソースをフェッチしてください。
+> オリジン 'https://example.org' からの 'http://localhost:8003/' でのフェッチへのアクセスは、CORS ポリシーによってブロックされました。'Access-Control-Allow-Origin' ヘッダーの値 'https://example.com' は指定されたオリジンと同じではありません。サーバーに有効な値のヘッダーを送信させるか、不透明な応答が必要な場合は、要求のモードを 'no-cors' に設定して、CORS を無効にしてリソースをフェッチしてください。
 
 # 参考
 
