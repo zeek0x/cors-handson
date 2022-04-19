@@ -30,14 +30,19 @@ CORSは、リクエストの条件によって次のどちらかの動作をし�
 
 単純リクエストでは、ブラウザから外部リソースへのリクエストAPIを呼び出した時点でクライアント・サーバ間でデータのやり取りが行われます。
 
-<!-- TODO: もうちょっとわかりやすい図にする -->
-
 ```mermaid
 sequenceDiagram
-    participant Client
-    participant Server
-    Client->>Server: GET / HTTP/1.1
-    Server->>Client: HTTP /1.1 200 OK
+    participant c as Browser
+    participant a as a.example.com
+    participant b as b.example.com
+
+    c->>a: GET / HTTP/1.1
+    a-->>c: HTTP/1.1 200 OK
+
+    c->>b: GET / HTTP/1.1
+    Note over a: Origin: https://a.example.com
+    b-->>c: HTTP/1.1 200 OK
+    Note over a: Access-Contro-Allow-Origin: https://a.example.com
 ```
 
 このリクエストがどうなっているかを、手元でサーバを立ててブラウザからの通信をみてみます。
@@ -224,6 +229,37 @@ await fetch(url)
 ![](img/validate-origin-single-invalid-origin-console.png)
 
 > オリジン 'https://example.org' からの 'http://localhost:8003/' でのフェッチへのアクセスは、CORS ポリシーによってブロックされました。'Access-Control-Allow-Origin' ヘッダーの値 'https://example.com' は指定されたオリジンと同じではありません。サーバーに有効な値のヘッダーを送信させるか、不透明な応答が必要な場合は、要求のモードを 'no-cors' に設定して、CORS を無効にしてリソースをフェッチしてください。
+
+## 4. プリフライトリクエストハンズオン
+
+```mermaid
+sequenceDiagram
+    participant c as Browser
+    participant a as a.example.com
+    participant b as b.example.com
+
+    Note left of c: Page Load Request
+    c->>a: GET / HTTP/1.1
+    a-->>c: HTTP/1.1 200 OK
+
+    Note left of c: Preflight Request
+    c->>b: OPTIONS / HTTP/1.1
+    Note over a: Origin: https://a.example.com<br>Access-Control-Request-Method: POST<br>Access-Control-Request-Headers: Content-Type
+    b-->>c: HTTP/1.1 200 OK
+    Note over a: Access-Contro-Allow-Origin: https://a.example.com
+
+    Note left of c: Main Request
+    c->>b: POST / HTTP/1.1
+    Note over a: Origin: https://a.example.com<br>Content-Type: application/json
+    b-->>c: HTTP/1.1 200 OK
+    Note over a: Access-Contro-Allow-Origin: https://a.example.com
+
+```
+
+```javascript
+let url = 'http://localhost:8003'
+await fetch(url, {method: 'POST', headrs: {'Content-Type': 'application/json'}, body:{text: 'nya-n'}})
+```
 
 # 参考
 
