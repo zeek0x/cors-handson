@@ -36,13 +36,19 @@ sequenceDiagram
     participant a as a.example.com
     participant b as b.example.com
 
-    c->>a: GET / HTTP/1.1
-    a-->>c: HTTP/1.1 200 OK
+    rect rgb(64, 64, 64)
+        Note left of c: Page Load Request
+        c->>a: GET / HTTP/1.1
+        a-->>c: HTTP/1.1 200 OK
+    end
 
-    c->>b: GET / HTTP/1.1
-    Note over a: Origin: https://a.example.com
-    b-->>c: HTTP/1.1 200 OK
-    Note over a: Access-Contro-Allow-Origin: https://a.example.com
+    rect rgb(64, 64, 64)
+        Note left of c: Simple Request
+        c->>b: GET / HTTP/1.1
+        Note over a: Origin: https://a.example.com
+        b-->>c: HTTP/1.1 200 OK
+        Note over a: Access-Contro-Allow-Origin: https://a.example.com
+    end
 ```
 
 このリクエストがどうなっているかを、手元でサーバを立ててブラウザからの通信をみてみます。
@@ -238,22 +244,27 @@ sequenceDiagram
     participant a as a.example.com
     participant b as b.example.com
 
-    Note left of c: Page Load Request
-    c->>a: GET / HTTP/1.1
-    a-->>c: HTTP/1.1 200 OK
+    rect rgb(64, 64, 64)
+        Note left of c: Page Load Request
+        c->>a: GET / HTTP/1.1
+        a-->>c: HTTP/1.1 200 OK
+    end
 
-    Note left of c: Preflight Request
-    c->>b: OPTIONS / HTTP/1.1
-    Note over a: Origin: https://a.example.com<br>Access-Control-Request-Method: POST<br>Access-Control-Request-Headers: Content-Type
-    b-->>c: HTTP/1.1 200 OK
-    Note over a: Access-Contro-Allow-Origin: https://a.example.com
+    rect rgb(64, 64, 64)
+        Note left of c: Preflight Request
+        c->>b: OPTIONS / HTTP/1.1
+        Note over a: Origin: https://a.example.com<br>Access-Control-Request-Method: POST<br>Access-Control-Request-Headers: Content-Type
+        b-->>c: HTTP/1.1 200 OK
+        Note over a: Access-Contro-Allow-Origin: https://a.example.com
+    end
 
-    Note left of c: Main Request
-    c->>b: POST / HTTP/1.1
-    Note over a: Origin: https://a.example.com<br>Content-Type: application/json
-    b-->>c: HTTP/1.1 200 OK
-    Note over a: Access-Contro-Allow-Origin: https://a.example.com
-
+    rect rgb(64, 64, 64)
+        Note left of c: Main Request
+        c->>b: POST / HTTP/1.1
+        Note over a: Origin: https://a.example.com<br>Content-Type: application/json
+        b-->>c: HTTP/1.1 200 OK
+        Note over a: Access-Contro-Allow-Origin: https://a.example.com
+    end
 ```
 
 ```javascript
