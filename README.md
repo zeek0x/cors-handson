@@ -287,7 +287,7 @@ sequenceDiagram
 
 ```javascript
 let url = 'http://localhost:8003'
-await fetch(url, {method: 'POST', headrs: {'Content-Type': 'application/json'}, body:{text: 'nya-n'}})
+await fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json'}, body:{text: 'nya-n'}})
 ```
 
 # 参考
