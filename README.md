@@ -250,6 +250,12 @@ await fetch(url)
 
 ## 4. プリフライトリクエストハンズオン
 
+これまでは、単純リクエストでの例を試してきました。
+本章では、プリフライトリクエストでの例を試してみましょう。
+CORSをプリフライトリクエストとして実行するために、JSONをPOSTで送信する例を考えます。
+POSTによるJSONの送信では、 `Content-Type: application/json` を設定することで、単純リクエストになる条件から外れて、プリフライトリクエストが適用されるようにします
+(単純リクエストになる条件については、1. CORSの種類の表を参照)。
+
 ```mermaid
 sequenceDiagram
     participant c as Browser
