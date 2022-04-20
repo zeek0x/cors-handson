@@ -2,15 +2,18 @@
 
 ## 0. 読者へ
 
-このハンズオンでは、ブラウザにおけるCORSの挙動をサーバとなるPythonコードをいじりながら理解していくことを目的としています。このハンズオンでは、CORSについてざっくりとした解説しかしないため、より詳細を知りたい方はMDNの[オリジン間リソース共有 (CORS)](https://developer.mozilla.org/ja/docs/Web/HTTP/CORS)を参照することをお奨めします。
+このハンズオンでは、ブラウザにおけるCORSの挙動をサーバとなるPythonコードをいじりながら理解していくことを目的としています。
+このハンズオンでは、CORSについてざっくりとした解説しかしないため、より詳細を知りたい方はMDNの[オリジン間リソース共有 (CORS)](https://developer.mozilla.org/ja/docs/Web/HTTP/CORS)を参照することをお奨めします。
 
-また、誤植や追記、内容の訂正などどんなPRを歓迎しています。説明文に一次情報を添えて変更を下さると嬉しいです。
+また、誤植や追記、内容の訂正などどんなPRを歓迎しています。
+説明文に一次情報を添えて変更を下さると嬉しいです。
 
 ## 1. CORSの種類
 
 まずは、手を動かす前にCORSの種類についてだけみていきましょう。
 
-Cross-Origin Resource Sharing (CORS) とは、ブラウザ上で動作するスクリプトが、異なるオリジンのリソースをやり取りできるようにするためのプロトコルです。オリジンについては後述します。
+Cross-Origin Resource Sharing (CORS) とは、ブラウザ上で動作するスクリプトが、異なるオリジンのリソースをやり取りできるようにするためのプロトコルです。
+オリジンについては後述します。
 
 CORSは、リクエストの条件によって次のどちらかの動作をします。
 
@@ -28,7 +31,7 @@ CORSは、リクエストの条件によって次のどちらかの動作をし�
 
 ## 2. 単純リクエストハンズオン
 
-単純リクエストでは、ブラウザから外部リソースへのリクエストAPIを呼び出した時点でクライアント・サーバ間でデータのやり取りが行われます。
+単純リクエスト(Simple Request)では、ブラウザから外部のオリジンへのリクエストを呼び出すことでデータのやり取りが行われます。
 
 ```mermaid
 sequenceDiagram
@@ -51,9 +54,9 @@ sequenceDiagram
     end
 ```
 
-このリクエストがどうなっているかを、手元でサーバを立ててブラウザからの通信をみてみます。
+このリクエストがどうなっているかを、手元でサーバを立てつつブラウザからリクエストを送信してみてみましょう。
 
-以下のコードを`srv.py`として保存しましょう。
+まず、以下のコードを`srv.py`として保存しましょう。
 
 ```python
 from http.server import HTTPServer, SimpleHTTPRequestHandler
@@ -69,12 +72,14 @@ httpd = HTTPServer(('localhost', 8003), CORSRequestHandler)
 httpd.serve_forever()
 ```
 
-保存したら、手元のコンソールから`python3 srv.py`のようにサーバを起動します。まずは動作確認として、そのまま`http://localhost:8003`をブラウザで開いてみましょう。
+保存したら、手元のコンソールから`python3 srv.py`を実行して、サーバを起動します。
+まずは動作確認として、そのまま`http://localhost:8003`をブラウザで開いてみましょう。
 `Hello CORS!` が表示されれば動作確認完了です。
 
 ![](./img/srv-operation-test.png)
 
-次に、ブラウザで`https://example.com`を開き、デベロッパーツールを開きます。そのまま以下のコードを、デベロッパーツールに入れて実行しましょう。
+次に、ブラウザで`https://example.com`(`http`でなく`https`なことに注意)を開き、デベロッパーツールを開きます。
+そのまま以下のコードを、デベロッパーツールに入れて実行しましょう。
 
 ```javascript
 let url = 'http://localhost:8003'
@@ -93,7 +98,8 @@ await fetch(url)
 
 何やらレスポンスに`Access-Control-Allow-Origin`ヘッダーがないため`fetch`へのアクセスがブロックされたとあります。
 
-（fetchメソッドにおいて'no-cors'を設定したopaque responseは、リクエストが失敗したときに空のレスポンスを返すことを意味します。詳しくはMDNの[Fetch API](https://developer.mozilla.org/ja/docs/Web/API/Fetch_API)を参照してください。）
+（`fetch`メソッドにおいて'no-cors'を設定したopaque responseは、リクエストが失敗したときに空のレスポンスを返すことを意味します。
+詳しくはMDNの[Fetch API](https://developer.mozilla.org/ja/docs/Web/API/Fetch_API)を参照してください。）
 
 サーバのログを見ると、サーバ側では正常にリクエストが処理されたようです。
 
@@ -105,11 +111,14 @@ await fetch(url)
 
 ![](./img/simple-request-failed-header-context.png)
 
-確かにレスポンスには`Access-Control-Allow-Origin`がありません。MDNでは[`Access-Control-Allow-Origin`](https://developer.mozilla.org/ja/docs/Web/HTTP/Headers/Access-Control-Allow-Origin)が、以下のように説明されます。
+確かに、レスポンスには`Access-Control-Allow-Origin`がありません。
+MDNでは[`Access-Control-Allow-Origin`](https://developer.mozilla.org/ja/docs/Web/HTTP/Headers/Access-Control-Allow-Origin)が、以下のように説明されます。
 
 > `Access-Control-Allow-Origin`レスポンスヘッダーは、指定されたオリジンからのリクエストを行うコードでレスポンスが共有できるかどうかを示します。
 
-指定されたオリジンというのは、`Origin`リクエストヘッダーの値のことです。画像の例では`https://example.com`ページを開き、外部オリジンの`http://localhost:8003`にリクエストを送信するときに、`Origin`ヘッダーの値は`https://example.com`となっております。詳しくは[Origin (オリジン)](https://developer.mozilla.org/ja/docs/Glossary/Origin)を参照してください。
+指定されたオリジンというのは、`Origin`リクエストヘッダーの値のことです。
+画像の例では`https://example.com`ページを開き、外部オリジンの`http://localhost:8003`にリクエストを送信するときに、`Origin`ヘッダーの値は`https://example.com`となっております。
+詳しくは[Origin (オリジン)](https://developer.mozilla.org/ja/docs/Glossary/Origin)を参照してください。
 
 それでは、サーバに`Access-Control-Allow-Origin`ヘッダーを追加する処理を記述してみましょう。
 
@@ -154,7 +163,8 @@ await (await fetch(url)).text()
 - サーバ側でCORSヘッダーを検査し、レスポンスにエラー（4xx）を返す
 - レスポンスは正常に返し、クライアントにCORSヘッダーを検査させる
 
-このハンズオンでは、`Access-Control-Origin-Header`レスポンスヘッダーに許可されるオリジンのリスト（スペース区切り）を設定して返すこととします。この実装は実際にデバッグの際に役立ちますが、副作用を伴うリクエストのレスポンスには向いていません。
+このハンズオンでは、`Access-Control-Origin-Header`レスポンスヘッダーに許可されるオリジンのリスト（スペース区切り）を設定して返すこととします。
+この実装は実際にデバッグの際に役立ちますが、副作用を伴うリクエストのレスポンスには向いていません。
 
 想定する動作は次のようになります。
 
@@ -216,7 +226,8 @@ await fetch(url)
 
 > オリジン 'https://example.org' からの 'http://localhost:8003/' での fetch へのアクセスは、CORS ポリシーによってブロックされました。Access-Control-Allow-Origin ヘッダーに複数の値 'https://example.com https://exmaple.net' が含まれていますが、許可されるのは1つだけです。サーバーに有効な値のヘッダーを送信させるか、不透明な応答が必要な場合は、要求のモードを 'no-cors' に設定して、CORSを無効にしてリソースをフェッチしてください。
 
-`fetch`メソッドの実行は失敗し、エラーメッセージには、`Access-Control-Allow-Origin` ヘッダーに複数のオリジンが含まれているという理由で失敗しています。
+`fetch`メソッドの実行は失敗します。
+エラーメッセージには、 `Access-Control-Allow-Origin` ヘッダーに複数のオリジンが含まれているとあります。
 
 実際に、Networkタブをみると `Access-Control-Allow-Origin` レスポンスヘッダーには複数のオリジン `https://example.com https://exmaple.net` が含まれていることが分かります。
 
@@ -230,7 +241,8 @@ await fetch(url)
 
 ### 3.a 不正な単一オリジン
 
-このハンズオンでは、不正なオリジンを伴うリクエストがきた時に、複数の正しいオリジンのリストを返すよう実装しました。補足として、単一の正しいオリジンを返すようにした場合の結果を以下に示します。
+このハンズオンでは、不正なオリジンを伴うリクエストがきた時に、複数の正しいオリジンのリストを返すよう実装しました。
+補足として、単一の正しいオリジンを返すようにした場合の結果を以下に示します。
 
 ![](img/validate-origin-single-invalid-origin-console.png)
 
