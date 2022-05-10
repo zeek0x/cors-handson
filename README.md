@@ -252,9 +252,6 @@ await fetch(url)
 
 これまでは、単純リクエストでの例を試してきました。
 本章では、プリフライトリクエストでの例を試してみましょう。
-CORSをプリフライトリクエストとして実行するために、JSONをPOSTで送信する例を考えます。
-POSTによるJSONの送信では、 `Content-Type: application/json` ヘッダーを設定することで、単純リクエストになる条件から外れ、プリフライトリクエストになります。
-(単純リクエストになる条件については、[1. CORSの種類](#1-corsの種類)の表を参照)。
 
 ```mermaid
 sequenceDiagram
@@ -285,10 +282,64 @@ sequenceDiagram
     end
 ```
 
+CORSをプリフライトリクエストとして実行するために、JSONをPOSTで送信する例を考えます。
+POSTによるJSONの送信では、 `Content-Type: application/json` ヘッダーを設定することで、単純リクエストになる条件から外れ、プリフライトリクエストになります。
+(単純リクエストになる条件については、[1. CORSの種類](#1-corsの種類)の表を参照)。
+
 ```javascript
 let url = 'http://localhost:8003'
 await fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json'}, body:{text: 'nya-n'}})
 ```
+
+POSTによる送信を受け付けられるようにし、重複した処理を関数に切り出します。
+
+```diff
+     def is_valid_origin(self, origin):
+         return origin in self.valid_origin_list
+
+-    def do_GET(self):
++    def send_acao(self):
+         self.send_response(200)
+         origin = self.headers['Origin']
+         acao = origin if self.is_valid_origin(origin) else ' '.join(self.valid_origin_list)
+         self.send_header('Access-Control-Allow-Origin', acao)
++        return
++
++    def do_GET(self):
++        self.send_response(200)
++        self.send_acao()
+         self.end_headers()
+         self.wfile.write(b'Hello CORS!')
+         return
+
++    def do_POST(self):
++        self.send_response(201)
++        self.send_acao()
++        self.end_headers()
++        self.wfile.write(b'Nice POST!')
++        return
++
+```
+
+修正した `srv.py` を起動し直し、 `https://example.com` （正しいオリジン）から `fetch` によるPOSTを実行します。
+結果は次のようになりました。
+
+![](img/preflight-request-failed-option-console.png)
+
+> オリジン 'https://example.com' からの 'http://localhost:8003/' でのfetchへのアクセスは、CORS ポリシーによってブロックされました。プリフライトリクエストへのレスポンスがアクセス制御チェックを通過しません。要求されたリソースに 'Access-Control-Allow-Origin' ヘッダーが存在しません。不透明な応答が必要な場合は、要求のモードを'no-cors'に設定して、CORS を無効にしてリソースをフェッチします。
+
+プリフライトリクエストのアクセス制御チェックを通過できなかったとあります。
+また、Networkタブやサーバのログから OPTIONS メソッドによるリクエストが送信され、ステータスコード 501 Not Implemented Error が返っていることがわかります。
+
+```console
+$ python3 srv.py
+127.0.0.1 - - [10/Aug/2022 11:45:14] code 501, message Unsupported method ('OPTIONS')
+127.0.0.1 - - [10/Aug/2022 11:45:14] "OPTIONS / HTTP/1.1" 501 -
+```
+
+送信した覚えのないOPTIONSメソッドが送られていますが、これがプリフライトリクエストです。
+プリフライトリクエストの条件に当てはまる場合、実際のPOSTリクエストなど発生する前に、OPTIONSメソッドによるリクエスト/レスポンスが発生し、オリジンの検証が行われます。
+この検証が通った場合のみブラウザは実際のPOSTリクエストを実行します。
 
 # 参考
 
