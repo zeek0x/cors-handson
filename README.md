@@ -343,6 +343,25 @@ $ python3 srv.py
 プリフライトリクエストの場合、実際のPOSTリクエストなどが発生する前に、OPTIONSメソッドによるリクエスト/レスポンスが発生し、CORSポリシーによる検証が行われます。
 この検証が通った場合のみブラウザは実際のPOSTリクエストを実行します。
 
+それではサーバでOPTIONSメソッドを受け付けるコードを追加しましょう。
+
+```diff
+class CORSRequestHandler(SimpleHTTPRequestHandler):
++     def do_OPTIONS(self):
++        self.send_response(200)
++        self.send_acao()
++        self.end_headers()
++        return
++
+```
+
+`srv.py` を起動し直して、再度実行してみます。
+
+```javascript
+let url = 'http://localhost:8003'
+await fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json'}, body:{text: 'nya-n'}})
+```
+
 # 参考
 
 - [CORS Tutorial: A Guide to Cross-Origin Resource Sharing](https://auth0.com/blog/cors-tutorial-a-guide-to-cross-origin-resource-sharing/)

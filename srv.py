@@ -27,5 +27,11 @@ class CORSRequestHandler(SimpleHTTPRequestHandler):
         self.wfile.write(b'Nice POST!')
         return
 
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_acao()
+        self.end_headers()
+        return
+
 httpd = HTTPServer(('localhost', 8003), CORSRequestHandler)
 httpd.serve_forever()
