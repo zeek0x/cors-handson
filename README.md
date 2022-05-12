@@ -362,6 +362,21 @@ let url = 'http://localhost:8003'
 await fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json'}, body:{text: 'nya-n'}})
 ```
 
+![](img/preflight-request-failed-header-console.png)
+
+> オリジン 'https://example.com' からの 'http://localhost:8003/' での fetch へのアクセスは、CORS ポリシーによってブロックされました。リクエストヘッダーフィールドの content-type は、プリフライトレスポンスの Access-Control-Allow-Headers によって許可されていません。
+
+エラーメッセージには `content-type` ※ リクエストヘッダーが `Access-Control-Allow-Headers` によって許可されていないとあります。
+
+=== ↓WIP↓ ===
+
+https://developer.mozilla.org/ja/docs/Web/HTTP/Headers/Access-Control-Request-Headers
+
+CORSでは、リクエストヘッダーを指定する場合、 OPTIONSメソッドによるリクエストのレスポンス内の `Access-Control-Allow-Headers` ヘッダーの値に入っている必要があります。
+それでは、OPTIONS のレスポンスで `Access-Control-Allow-Headers` ヘッダーと値に `Content-Type` を入れるようにしてみましょう。
+
+※ HTTPヘッダーは case-insensitive （大文字・小文字を区別しない）ので、`Contnet-Type` と `content-type` 表記のどちらでもよい。
+
 # 参考
 
 - [CORS Tutorial: A Guide to Cross-Origin Resource Sharing](https://auth0.com/blog/cors-tutorial-a-guide-to-cross-origin-resource-sharing/)
