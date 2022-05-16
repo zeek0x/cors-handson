@@ -299,7 +299,6 @@ POSTによる送信を受け付けられるようにし、重複した処理を�
 
 -    def do_GET(self):
 +    def send_acao(self):
-         self.send_response(200)
          origin = self.headers['Origin']
          acao = origin if self.is_valid_origin(origin) else ' '.join(self.valid_origin_list)
          self.send_header('Access-Control-Allow-Origin', acao)
@@ -348,7 +347,6 @@ $ python3 srv.py
 ```diff
 class CORSRequestHandler(SimpleHTTPRequestHandler):
 +     def do_OPTIONS(self):
-+        self.send_response(200)
 +        self.send_acao()
 +        self.end_headers()
 +        return

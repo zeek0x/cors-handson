@@ -7,7 +7,6 @@ class CORSRequestHandler(SimpleHTTPRequestHandler):
         return origin in self.valid_origin_list
 
     def send_acao(self):
-        self.send_response(200)
         origin = self.headers['Origin']
         acao = origin if self.is_valid_origin(origin) else ' '.join(self.valid_origin_list)
         self.send_header('Access-Control-Allow-Origin', acao)
