@@ -364,16 +364,57 @@ await fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json'},
 
 > オリジン 'https://example.com' からの 'http://localhost:8003/' での fetch へのアクセスは、CORS ポリシーによってブロックされました。リクエストヘッダーフィールドの content-type は、プリフライトレスポンスの Access-Control-Allow-Headers によって許可されていません。
 
-エラーメッセージには `content-type` ※ リクエストヘッダーが `Access-Control-Allow-Headers` によって許可されていないとあります。
+エラーメッセージには`content-type`リクエストヘッダーが `Access-Control-Allow-Headers`によって許可されていないとあります（HTTPヘッダーはcase-insensitive（大文字・小文字を区別しない）なので、`Contnet-Type`と`content-type`表記のどちらでもよい）。
+CORSでリクエストヘッダーを指定する場合、以下の図のようなOPTIONSメソッドによるリクエストが発生します。
 
-=== ↓WIP↓ ===
+```mermaid
+sequenceDiagram
+    participant c as Browser
+    participant a as Server
 
-https://developer.mozilla.org/ja/docs/Web/HTTP/Headers/Access-Control-Request-Headers
+    c->>a: OPTIONS / HTTP/1.1
+    Note over c, a: Origin: https://a.example.com<br>Access-Control-Request-Headers: Content-Type
+    a-->>c: HTTP/1.1 200 OK
+    Note over c, a: Access-Control-Allow-Origin: https://a.example.com<br>Access-Control-Allow-Headers: Content-Type
 
-CORSでは、リクエストヘッダーを指定する場合、 OPTIONSメソッドによるリクエストのレスポンス内の `Access-Control-Allow-Headers` ヘッダーの値に入っている必要があります。
-それでは、OPTIONS のレスポンスで `Access-Control-Allow-Headers` ヘッダーと値に `Content-Type` を入れるようにしてみましょう。
+```
 
-※ HTTPヘッダーは case-insensitive （大文字・小文字を区別しない）ので、`Contnet-Type` と `content-type` 表記のどちらでもよい。
+OPTIONSメソッドのリクエストの`Access-Control-Request-Headers`に、指定したヘッダー名が入ります。Networkタブから実際のOPTIONSメソッドによるリクエストを確認することができます。
+
+![](img/preflight-request-failed-request-acrh.png)
+
+リクエストの`Access-Control-Request-Headers`に対するレスポンスの`Access-Control-Allow-Headers`がないので、CORSが失敗していました。
+それでは、`srv.py`が`Access-Control-Allow-Headers`で`Content-Type`を許可するようにしてみましょう。
+
+```diff
+@@ -2,6 +2,7 @@ from http.server import HTTPServer, SimpleHTTPRequestHandler
+
+ class CORSRequestHandler(SimpleHTTPRequestHandler):
+     valid_origin_list = ['https://example.com', 'https://exmaple.net']
++    valid_headers_list = ['Content-Type']
+
+     def is_valid_origin(self, origin):
+         return origin in self.valid_origin_list
+@@ -12,6 +13,11 @@ class CORSRequestHandler(SimpleHTTPRequestHandler):
+         self.send_header('Access-Control-Allow-Origin', acao)
+         return
+
++    def send_acah(self):
++        acrh = self.headers('Access-Control-Request-Headers')
++        acah = [h for h in acrh if h in self.valid_headers_list].join(', ')
++        self.send_header('Access-Control-Allow-Headers', acah)
++
+     def do_GET(self):
+         self.send_response(200)
+         self.send_acao()
+@@ -29,6 +35,7 @@ class CORSRequestHandler(SimpleHTTPRequestHandler):
+     def do_OPTIONS(self):
+         self.send_response(200)
+         self.send_acao()
++        self.send_acah()
+         self.end_headers()
+         return
+```
 
 # 参考
 
