@@ -391,17 +391,20 @@ OPTIONSメソッドのリクエストの`Access-Control-Request-Headers`に、�
 
  class CORSRequestHandler(SimpleHTTPRequestHandler):
      valid_origin_list = ['https://example.com', 'https://exmaple.net']
-+    valid_headers_list = ['Content-Type']
++    valid_headers = ['Content-Type']
 
      def is_valid_origin(self, origin):
          return origin in self.valid_origin_list
++    def is_valid_header(self, header):
++        return header.upper() in [h.upper() for h in self.valid_headers]
+
 @@ -12,6 +13,11 @@ class CORSRequestHandler(SimpleHTTPRequestHandler):
          self.send_header('Access-Control-Allow-Origin', acao)
          return
 
 +    def send_acah(self):
-+        acrh = self.headers('Access-Control-Request-Headers')
-+        acah = [h for h in acrh if h in self.valid_headers_list].join(', ')
++        acrh = self.headers['Access-Control-Request-Headers'].split(',')
++        acah = ','.join([h for h in acrh if self.is_valid_header(h)])
 +        self.send_header('Access-Control-Allow-Headers', acah)
 +
      def do_GET(self):
