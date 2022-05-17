@@ -419,6 +419,9 @@ OPTIONSメソッドのリクエストの`Access-Control-Request-Headers`に、�
          return
 ```
 
+CORSで許可されるヘッダーのリストを`valid_headers`変数としてを定義します。
+`send_acah`関数では、リクエストの`Access-Control-Request-Headers`ヘッダーからCORSで実際に使われるヘッダーを取り出し、その中から`valid_headers`に入っている値のみを`,`区切りで連結して`Access-Control-Allow-Headers`に設定し、レスポンスを返しています。
+
 # 参考
 
 - [CORS Tutorial: A Guide to Cross-Origin Resource Sharing](https://auth0.com/blog/cors-tutorial-a-guide-to-cross-origin-resource-sharing/)
