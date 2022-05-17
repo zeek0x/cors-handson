@@ -395,6 +395,7 @@ OPTIONSメソッドのリクエストの`Access-Control-Request-Headers`に、�
 
      def is_valid_origin(self, origin):
          return origin in self.valid_origin_list
++
 +    def is_valid_header(self, header):
 +        return header.upper() in [h.upper() for h in self.valid_headers]
 
