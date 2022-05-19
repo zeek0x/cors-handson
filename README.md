@@ -444,8 +444,8 @@ CORSに関する主要なヘッダーについてまとめておきます。
 |`Access-Control-Request-Headers`|リクエスト|`Access-Control-Allow-Headers`|実際のリクエストで指定されるヘッダーを示す|
 |`Access-Control-Request-Method`|リクエスト|`Access-Control-Allow-Method`|実際のリクエストが行われた際にどの HTTPメソッドが使われるかを示す|
 |`Access-Control-Allow-Origin`|レスポンス|`Origin`|実際のリクエストのレスポンスで共有を許可するオリジンを示す|
-|`Access-Control-Allow-Headers`|リクエスト|`Access-Control-Request-Headers`|実際のリクエストで指定が許可されるヘッダーを示す|
-|`Access-Control-Allow-Method`|リクエスト|`Access-Control-Request-Method`|実際のリクエストでリソースへのアクセスが許可されるHTTPメソッドを示す|
+|`Access-Control-Allow-Headers`|レスポンス|`Access-Control-Request-Headers`|実際のリクエストで指定が許可されるヘッダーを示す|
+|`Access-Control-Allow-Method`|レスポンス|`Access-Control-Request-Method`|実際のリクエストでリソースへのアクセスが許可されるHTTPメソッドを示す|
 |`Access-Control-Max-Age`|レスポンス|-| `Access-Control-Allow-Methods`および `Access-Control-Allow-Headers`ヘッダーの情報をキャッシュすることができる時間（秒）の長さを示す|
 
 <!-- Access-Control-Allow-Credentials も入れるか？ -->
