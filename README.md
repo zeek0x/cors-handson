@@ -184,16 +184,16 @@ A -- No --> C --> D
 
 ```diff
 class CORSRequestHandler(SimpleHTTPRequestHandler):
-+    valid_origin_list = ['https://example.com', 'https://exmaple.net']
++    valid_origins = ['https://example.com', 'https://exmaple.net']
 +
 +    def is_valid_origin(self, origin):
-+        return origin in self.valid_origin_list
++        return origin in self.valid_origins
 +
      def do_GET(self):
          self.send_response(200)
 -        self.send_header('Access-Control-Allow-Origin', '*')
 +        origin = self.headers['Origin']
-+        acao = origin if self.is_valid_origin(origin) else ' '.join(self.valid_origin_list)
++        acao = origin if self.is_valid_origin(origin) else ' '.join(self.valid_origins)
 +        self.send_header('Access-Control-Allow-Origin', acao)
          self.end_headers()
          self.wfile.write(b'Hello CORS!')
@@ -295,12 +295,12 @@ POSTによる送信を受け付けられるようにし、重複した処理を�
 
 ```diff
      def is_valid_origin(self, origin):
-         return origin in self.valid_origin_list
+         return origin in self.valid_origins
 
 -    def do_GET(self):
 +    def send_acao(self):
          origin = self.headers['Origin']
-         acao = origin if self.is_valid_origin(origin) else ' '.join(self.valid_origin_list)
+         acao = origin if self.is_valid_origin(origin) else ' '.join(self.valid_origins)
          self.send_header('Access-Control-Allow-Origin', acao)
 +        return
 +
@@ -390,11 +390,11 @@ OPTIONSメソッドのリクエストの`Access-Control-Request-Headers`に、�
 @@ -2,6 +2,7 @@ from http.server import HTTPServer, SimpleHTTPRequestHandler
 
  class CORSRequestHandler(SimpleHTTPRequestHandler):
-     valid_origin_list = ['https://example.com', 'https://exmaple.net']
+     valid_origins = ['https://example.com', 'https://exmaple.net']
 +    valid_headers = ['Content-Type']
 
      def is_valid_origin(self, origin):
-         return origin in self.valid_origin_list
+         return origin in self.valid_origins
 +
 +    def is_valid_header(self, header):
 +        return header.upper() in [h.upper() for h in self.valid_headers]
