@@ -423,6 +423,34 @@ OPTIONSメソッドのリクエストの`Access-Control-Request-Headers`に、�
 CORSで許可されるヘッダーのリストを`valid_headers`変数としてを定義します。
 `send_acah`関数では、リクエストの`Access-Control-Request-Headers`ヘッダーからCORSで実際に使われるヘッダーを取り出し、その中から`valid_headers`に入っている値のみを`,`区切りで連結して`Access-Control-Allow-Headers`に設定し、レスポンスを返しています。
 
+再度、実行してみましょう。
+
+```console
+await fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json'}, body:{text: 'nya-n'}})
+```
+
+![](./img/preflight-request-success-console.png)
+
+とうとうプリフライトリクエストによるCORSに成功しました。
+
+## 5. その他のヘッダー
+
+CORSには、上記で紹介した以外にも大事なヘッダーが多くあります。
+CORSに関する主要なヘッダーについてまとめておきます。
+
+|ヘッダー名|リクエスト/レスポンス|対応するヘッダー名|説明|
+|---|---|---|---|
+|`Origin`|リクエスト|`Access-Control-Allow-Origin`|実際のリクエストの送信元のオリジンを示す|
+|`Access-Control-Request-Headers`|リクエスト|`Access-Control-Allow-Headers`|実際のリクエストで指定されるヘッダーを示す|
+|`Access-Control-Request-Method`|リクエスト|`Access-Control-Allow-Method`|実際のリクエストが行われた際にどの HTTPメソッドが使われるかを示す|
+|`Access-Control-Allow-Origin`|レスポンス|`Origin`|実際のリクエストのレスポンスで共有を許可するオリジンを示す|
+|`Access-Control-Allow-Headers`|リクエスト|`Access-Control-Request-Headers`|実際のリクエストで指定が許可されるヘッダーを示す|
+|`Access-Control-Allow-Method`|リクエスト|`Access-Control-Request-Method`|実際のリクエストでリソースへのアクセスが許可されるHTTPメソッドを示す|
+|`Access-Control-Max-Age`|レスポンス|-| `Access-Control-Allow-Methods`および `Access-Control-Allow-Headers`ヘッダーの情報をキャッシュすることができる時間（秒）の長さを示す|
+
+<!-- Access-Control-Allow-Credentials も入れるか？ -->
+<!-- これを読んでる方へ Access-Control-*-Method の章を書いてください :D -->
+
 # 参考
 
 - [CORS Tutorial: A Guide to Cross-Origin Resource Sharing](https://auth0.com/blog/cors-tutorial-a-guide-to-cross-origin-resource-sharing/)
