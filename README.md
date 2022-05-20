@@ -3,14 +3,16 @@
 ## 0. 読者へ
 
 このハンズオンでは、ブラウザにおけるCORSの挙動をサーバとなるPythonコードをいじりながら理解していくことを目的としています。
-このハンズオンでは、CORSについてざっくりとした解説しかしないため、より詳細を知りたい方はMDNの[オリジン間リソース共有 (CORS)](https://developer.mozilla.org/ja/docs/Web/HTTP/CORS)を参照することをお奨めします。
+CORSについてざっくりとした説明しかしないため、より詳細を知りたい方はMDNの[オリジン間リソース共有 (CORS)](https://developer.mozilla.org/ja/docs/Web/HTTP/CORS)を参照することをお奨めします。
 
-また、誤植や追記、内容の訂正などどんなPRを歓迎しています。
+このハンズオンではブラウザがGoogle Chromeであることを想定します。
+
+誤植や追記、内容の訂正など、どんなPRも歓迎しています。
 説明文に一次情報を添えて変更を下さると嬉しいです。
 
 ## 1. CORSの種類
 
-まずは、手を動かす前にCORSの種類についてだけみていきましょう。
+まずは、手を動かす前にCORSの種類についてみてみます。
 
 Cross-Origin Resource Sharing (CORS) とは、ブラウザ上で動作するスクリプトが、異なるオリジンのリソースをやり取りできるようにするためのプロトコルです。
 オリジンについては後述します。
@@ -27,7 +29,7 @@ CORSは、リクエストの条件によって次のどちらかの動作をし�
 |メソッドが以下の中に含まれる|<ul><li>`GET`</li><li>`HEAD`</li><li>`POST`</li></ul>|
 |独自で設定するヘッダーが以下の中に含まれる|<ul><li>`Accept`</li><li>`Accept-Language`</li><li>`Content-Length`</li><li>`Content-Type`(以下の値のみ)<ul><li>`application/x-www-form-urlencoded`</li><li>`multipart/form-data`</li><li>` text/plain`</li></ul></ul>|
 
-さて、いつまでも説明をしていると退屈なので、手を動かしましょう。
+さて、説明はここまでで手を動かしてみましょう。
 
 ## 2. 単純リクエストハンズオン
 
@@ -54,9 +56,9 @@ sequenceDiagram
     end
 ```
 
-このリクエストがどうなっているかを、手元でサーバを立てつつブラウザからリクエストを送信してみてみましょう。
+このリクエストがどうなっているかを、ローカルでサーバを立てつつブラウザからリクエストを送信して調べてみましょう。
 
-まず、以下のコードを`srv.py`として保存しましょう。
+まず、以下のコードを`srv.py`として保存します。
 
 ```python
 from http.server import HTTPServer, SimpleHTTPRequestHandler
@@ -72,7 +74,7 @@ httpd = HTTPServer(('localhost', 8003), CORSRequestHandler)
 httpd.serve_forever()
 ```
 
-保存したら、手元のコンソールから`python3 srv.py`を実行して、サーバを起動します。
+保存したら、コンソールから`python3 srv.py`を実行して、サーバを起動します。
 まずは動作確認として、そのまま`http://localhost:8003`をブラウザで開いてみましょう。
 `Hello CORS!` が表示されれば動作確認完了です。
 
@@ -92,7 +94,7 @@ await fetch(url)
 
 ![](./img/simple-request-failed-error-message.png)
 
-なんと！初めてのCORSは失敗に終わってしまいました！落ち着いてエラーメッセージを読んでみましょう。
+なんと！初めてのリクエストは失敗に終わってしまいました！落ち着いてエラーメッセージを読んでみましょう。
 
 > オリジン 'https://example.com' からの 'http://localhost:8003/' でのfetchへのアクセスは、CORS ポリシーによってブロックされました。要求されたリソースに 'Access-Control-Allow-Origin' ヘッダーが存在しません。opaque responseが必要な場合は、リクエストのmodeに'no-cors'を設定して、CORSを無効にしてリソースをフェッチしてください。
 
@@ -156,15 +158,22 @@ await (await fetch(url)).text()
 
 サーバ側で許可するオリジンであった場合には、`Origin`リクエストヘッダーの値を`Access-Control-Allow-Origin`に設定して返します。
 
-では、サーバ側で許可しないオリジンであった場合はどうすると良いでしょうか？実は、この時の動作は[Cross-Origin Resource Sharing W3C Recommendation 16 January 2014 supserseded 2 June 2020](https://www.w3.org/TR/2020/SPSD-cors-20200602/)及び[The Web Origin Concept](https://datatracker.ietf.org/doc/html/rfc6454)で定義されません。
+では、サーバ側で許可しないオリジンであった場合はどうすると良いでしょうか？
+実は、この時の動作は[Cross-Origin Resource Sharing W3C Recommendation 16 January 2014 supserseded 2 June 2020](https://www.w3.org/TR/2020/SPSD-cors-20200602/)及び[The Web Origin Concept](https://datatracker.ietf.org/doc/html/rfc6454)で定義されません。
 
 [What is the expected response to an invalid CORS request?](https://stackoverflow.com/questions/14015118/what-is-the-expected-response-to-an-invalid-cors-request)にあるように、動作には2つの派閥があるようです。
 
 - サーバ側でCORSヘッダーを検査し、レスポンスにエラー（4xx）を返す
 - レスポンスは正常に返し、クライアントにCORSヘッダーを検査させる
 
-このハンズオンでは、`Access-Control-Origin-Header`レスポンスヘッダーに許可されるオリジンのリスト（スペース区切り）を設定して返すこととします。
+このハンズオンでは、`Access-Control-Allow-Origin`レスポンスヘッダーに許可されるオリジンのリスト（スペース区切り）を設定して返すこととします。
 この実装は実際にデバッグの際に役立ちますが、副作用を伴うリクエストのレスポンスには向いていません。
+
+<!--
+他の実装の選択肢としては、`Access-Control-Allow-Origin`レスポンスヘッダーをそもそも返さないなどが考えられますが、この方法はCORSを使用するWeb開発者がエラーに気づきにくいデメリットがあります。
+
+ハンズオンとしては、こちらの方針としてもいいかもしれない。
+-->
 
 想定する動作は次のようになります。
 
@@ -172,8 +181,8 @@ await (await fetch(url)).text()
 flowchart
 
 A["Origin が設定されており、\n許可されるオリジンである"]
-B[Access-Control-Origin-Header に Origin の値を\n設定してレスポンスヘッダーに追加する]
-C[Access-Control-Origin-Header に 許可される Origin のリストを\n設定してレスポンスヘッダーに追加する]
+B[Access-Control-Allow-Origin` に Origin の値を\n設定してレスポンスヘッダーに追加する]
+C[Access-Control-Allow-Origin` に 許可される Origin のリストを\n設定してレスポンスヘッダーに追加する]
 D[2xxレスポンスを返す]
 
 A -- Yes --> B --> D
@@ -200,7 +209,10 @@ class CORSRequestHandler(SimpleHTTPRequestHandler):
          return
 ```
 
-忘れずにサーバを再起動し、`https://example.com`を開いて、コンソールから以下を実行します。
+`Origin`リクエストヘッダーで送信された値が`valid_origins`リストに入っている場合、`Access-Control-Allow-Origin`レスポンスヘッダーにその値を設定します。
+入っていない場合は、`Access-Control-Allow-Origin`レスポンスヘッダーに`valid_origins`の値を` `（スペース）区切りで連結した値を設定します。
+
+修正が完了したら、忘れずにサーバを再起動し、`https://example.com`を開いて、コンソールから以下を実行します。
 
 ```javascript
 let url = 'http://localhost:8003'
@@ -211,7 +223,7 @@ await fetch(url)
 
 `fetch`メソッドの実行は成功します。
 
-Networkタブを見てみると`Origin`リクエストヘッダーの値と`Access-Control-Allow-Origin`の値が同一になっていることが分かります。
+Networkタブを見てみると`Origin`リクエストヘッダーの値と`Access-Control-Allow-Origin`レスポンスヘッダーの値が一致していることが確認できます。
 
 ![](./img/validate-origin-fetch-success-network.png)
 
@@ -227,13 +239,13 @@ await fetch(url)
 > オリジン 'https://example.org' からの 'http://localhost:8003/' での fetch へのアクセスは、CORS ポリシーによってブロックされました。Access-Control-Allow-Origin ヘッダーに複数の値 'https://example.com https://exmaple.net' が含まれていますが、許可されるのは1つだけです。サーバーに有効な値のヘッダーを送信させるか、不透明な応答が必要な場合は、要求のモードを 'no-cors' に設定して、CORSを無効にしてリソースをフェッチしてください。
 
 `fetch`メソッドの実行は失敗します。
-エラーメッセージには、 `Access-Control-Allow-Origin` ヘッダーに複数のオリジンが含まれているとあります。
+エラーメッセージには、`Access-Control-Allow-Origin`ヘッダーに複数のオリジンが含まれているとあります。
 
-実際に、Networkタブをみると `Access-Control-Allow-Origin` レスポンスヘッダーには複数のオリジン `https://example.com https://exmaple.net` が含まれていることが分かります。
+実際に、Networkタブをみると`Access-Control-Allow-Origin`レスポンスヘッダーには複数のオリジン`https://example.com https://exmaple.net`が含まれていることが確認できます。
 
 ![](img/validate-origin-fetch-error-network.png)
 
-[Cross-Origin Resource Sharing - 5.1 Access-Control-Allow-Origin Response Header](https://www.w3.org/TR/2020/SPSD-cors-20200602/#access-control-allow-origin-response-header) では  `origin-list-or-null` が定義されていますが、`Note`に以下のような記述があります。
+[Cross-Origin Resource Sharing - 5.1 Access-Control-Allow-Origin Response Header](https://www.w3.org/TR/2020/SPSD-cors-20200602/#access-control-allow-origin-response-header) では  `origin-list-or-null`が定義されていますが、`Note`に以下のような記述があります。
 
 > 実際には、origin-list-or-null実装はより制約されています。スペースで区切られたオリジンのリストを許可するのではなく、単一のオリジンまたは文字列 "null" のどちらかを指定します。
 
@@ -284,11 +296,11 @@ sequenceDiagram
 
 CORSをプリフライトリクエストとして実行するために、JSONをPOSTで送信する例を考えます。
 POSTによるJSONの送信では、 `Content-Type: application/json` ヘッダーを設定することで、単純リクエストになる条件から外れ、プリフライトリクエストになります。
-(単純リクエストになる条件については、[1. CORSの種類](#1-corsの種類)の表を参照)。
+単純リクエスト/プリフライトリクエストの条件については、[1. CORSの種類](#1-corsの種類)の表を参照してください。
 
 ```javascript
 let url = 'http://localhost:8003'
-await fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json'}, body:{text: 'nya-n'}})
+await fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json'}, body:{}})
 ```
 
 POSTによる送信を受け付けられるようにし、重複した処理を関数に切り出します。
@@ -328,7 +340,7 @@ POSTによる送信を受け付けられるようにし、重複した処理を�
 > オリジン 'https://example.com' からの 'http://localhost:8003/' でのfetchへのアクセスは、CORS ポリシーによってブロックされました。プリフライトリクエストへのレスポンスがアクセス制御チェックを通過しません。要求されたリソースに 'Access-Control-Allow-Origin' ヘッダーが存在しません。不透明な応答が必要な場合は、要求のモードを'no-cors'に設定して、CORS を無効にしてリソースをフェッチします。
 
 プリフライトリクエストのアクセス制御チェックを通過できなかったとあります。
-また、Networkタブやサーバのログから OPTIONS メソッドによるリクエストが送信され、ステータスコード 501 Not Implemented Error が返っていることがわかります。
+また、NetworkタブやサーバのログからOPTIONSメソッドによるリクエストが送信され、ステータスコード501(Not Implemented Error)が返っていることが確認できます。
 POSTメソッドのリクエストは発生せずに、OPTIONSメソッドのリクエストが発生してしまっています。どういうことでしょうか？
 
 ![](img/preflight-request-failed-option-network.png)
@@ -357,7 +369,7 @@ class CORSRequestHandler(SimpleHTTPRequestHandler):
 
 ```javascript
 let url = 'http://localhost:8003'
-await fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json'}, body:{text: 'nya-n'}})
+await fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json'}, body:{}})
 ```
 
 ![](img/preflight-request-failed-header-console.png)
@@ -422,16 +434,22 @@ OPTIONSメソッドのリクエストの`Access-Control-Request-Headers`に、�
 
 CORSで許可されるヘッダーのリストを`valid_headers`変数としてを定義します。
 `send_acah`関数では、リクエストの`Access-Control-Request-Headers`ヘッダーからCORSで実際に使われるヘッダーを取り出し、その中から`valid_headers`に入っている値のみを`,`区切りで連結して`Access-Control-Allow-Headers`に設定し、レスポンスを返しています。
+`is_valid_header`関数では、HTTPヘッダーがcase insensitiveであることから文字列を全て大文字にして比較をしています。
 
 再度、実行してみましょう。
 
-```console
-await fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json'}, body:{text: 'nya-n'}})
+```javascript
+let url = 'http://localhost:8003'
+await fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json'}, body:{}})
 ```
 
 ![](./img/preflight-request-success-console.png)
 
 とうとうプリフライトリクエストによるCORSに成功しました。
+
+Networkタブから、`Access-Control-Request-Headers`と`Access-Control-Allow-Headers`ヘッダに`content-type`が設定されていることが確認できます。
+
+![](./img/preflight-request-success-network.png)
 
 ## 5. その他のヘッダー
 
@@ -453,5 +471,6 @@ CORSに関する主要なヘッダーについてまとめておきます。
 
 # 参考
 
+- [オリジン間リソース共有 (CORS)](https://developer.mozilla.org/ja/docs/Web/HTTP/CORS) とMDNにおけるその他のCORS関連ページ
 - [CORS Tutorial: A Guide to Cross-Origin Resource Sharing](https://auth0.com/blog/cors-tutorial-a-guide-to-cross-origin-resource-sharing/)
 - [Python 3: serve the current directory as HTTP while setting CORS headers for XHR debugging](https://gist.github.com/acdha/925e9ffc3d74ad59c3ea)
