@@ -184,8 +184,8 @@ await (await fetch(url)).text()
 flowchart
 
 A["Origin が設定されており、\n許可されるオリジンである"]
-B[Access-Control-Allow-Origin` に Origin の値を\n設定してレスポンスヘッダーに追加する]
-C[Access-Control-Allow-Origin` に 許可される Origin のリストを\n設定してレスポンスヘッダーに追加する]
+B[Access-Control-Allow-Origin に Origin の値を\n設定してレスポンスヘッダーに追加する]
+C[Access-Control-Allow-Origin に 許可される Origin のリストを\n設定してレスポンスヘッダーに追加する]
 D[2xxレスポンスを返す]
 
 A -- Yes --> B --> D
