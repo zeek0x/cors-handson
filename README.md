@@ -379,8 +379,13 @@ await fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json'},
 
 > オリジン 'https://example.com' からの 'http://localhost:8003/' での fetch へのアクセスは、CORS ポリシーによってブロックされました。リクエストヘッダーフィールドの content-type は、プリフライトレスポンスの Access-Control-Allow-Headers によって許可されていません。
 
+またもやリクエストは失敗してしました。
 エラーメッセージには`content-type`リクエストヘッダーが `Access-Control-Allow-Headers`によって許可されていないとあります（HTTPヘッダーはcase-insensitive（大文字・小文字を区別しない）なので、`Contnet-Type`と`content-type`表記のどちらでもよい）。
-CORSでリクエストヘッダーを指定する場合、以下の図のようなOPTIONSメソッドによるリクエストが発生します。
+MDNでは[`Access-Control-Allow-Headers`](https://developer.mozilla.org/ja/docs/Web/HTTP/Headers/Access-Control-Allow-Headers)が、以下のように説明されます。
+
+> `Access-Control-Allow-Headers` レスポンスヘッダーは、 `Access-Control-Request-Headers` を含むプリフライトリクエストへのレスポンスで、実際のリクエストの間に使用できる HTTP ヘッダーを示すために使用されます。
+
+CORSでは、リクエストヘッダーを指定する場合、以下の図のようなOPTIONSメソッドのクエストが発生します。
 
 ```mermaid
 sequenceDiagram
@@ -394,11 +399,11 @@ sequenceDiagram
 
 ```
 
-OPTIONSメソッドのリクエストの`Access-Control-Request-Headers`に、指定したヘッダー名が入ります。Networkタブから実際のOPTIONSメソッドによるリクエストを確認することができます。
+OPTIONSメソッドのリクエストの`Access-Control-Request-Headers`ヘッダーの値に、実際のリクエストで指定したヘッダー名が入ります。NetworkタブからOPTIONSメソッドによるリクエストの内容を確認することができます。
 
 ![](img/preflight-request-failed-request-acrh.png)
 
-リクエストの`Access-Control-Request-Headers`に対するレスポンスの`Access-Control-Allow-Headers`がないので、CORSが失敗していました。
+リクエストの`Access-Control-Request-Headers`が`content-type`となっていますが、対応するレスポンスで`Access-Control-Allow-Headers`がないので、CORSが失敗していました。
 それでは、`srv.py`が`Access-Control-Allow-Headers`で`Content-Type`を許可するようにしてみましょう。
 
 ```diff
