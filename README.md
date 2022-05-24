@@ -176,28 +176,27 @@ await (await fetch(url)).text()
 
 ## 3. アクセスを許可するオリジン
 
-`Access-Control-Allow-Origin`レスポンスヘッダーに`*`を設定し、任意のオリジンからのリクエストを許可していました。この章では、オリジンによってアクセスの許可を出し分けてみましょう。
+前の章では、`Access-Control-Allow-Origin`レスポンスヘッダーに`*`を設定し、任意のオリジンからのリクエストを許可していました。
+この章では、ブラウザが送信してくるオリジンによってアクセスの許可を出し分けてみましょう。
 
 サーバ側で許可するオリジンであった場合には、`Origin`リクエストヘッダーの値を`Access-Control-Allow-Origin`に設定して返します。
 
 では、サーバ側で許可しないオリジンであった場合はどうすると良いでしょうか？
-実は、この時の動作は[Cross-Origin Resource Sharing W3C Recommendation 16 January 2014 supserseded 2 June 2020](https://www.w3.org/TR/2020/SPSD-cors-20200602/)及び[The Web Origin Concept](https://datatracker.ietf.org/doc/html/rfc6454)で定義されません。
+実は、この時のサーバ側の動作は[Cross-Origin Resource Sharing W3C Recommendation 16 January 2014 supserseded 2 June 2020](https://www.w3.org/TR/2020/SPSD-cors-20200602/)及び[The Web Origin Concept](https://datatracker.ietf.org/doc/html/rfc6454)で定義されません。
 
 [What is the expected response to an invalid CORS request?](https://stackoverflow.com/questions/14015118/what-is-the-expected-response-to-an-invalid-cors-request)にあるように、動作には2つの派閥があるようです。
 
 - サーバ側でCORSヘッダーを検査し、レスポンスにエラー（4xx）を返す
 - レスポンスは正常に返し、クライアントにCORSヘッダーを検査させる
 
-このハンズオンでは、後者の選択の方針で進めます。
-また、`Access-Control-Allow-Origin`レスポンスヘッダーには、許可されるオリジンのリスト（スペース区切り）を設定して返すこととします。
+このハンズオンでは、後者の方針で進めます。
+そして、サーバ側で許可しないオリジンであった場合には、`Access-Control-Allow-Origin`ヘッダーに許可されるオリジンのリスト（スペース区切り）を設定し、レスポンスを返すこととします。
 この実装は実際にデバッグの際に役立ちますが、副作用を伴うリクエストのレスポンスには向いていません。
 また、なんらかの理由でオリジンのリストを公開したくない場合にも使えません。
 その場合には、単に`Access-Control-Allow-Origin`レスポンスヘッダーを設定しないべきでしょう。
 
 <!--
-他の実装の選択肢としては、`Access-Control-Allow-Origin`レスポンスヘッダーをそもそも返さないなどが考えられますが、この方法はCORSを使用するWeb開発者がエラーに気づきにくいデメリットがあります。
-
-ハンズオンとしては、こちらの方針としてもいいかもしれない。
+サーバ側で許可しないオリジンであった場合には、`Access-Control-Allow-Origin`レスポンスヘッダーを設定しない方針の方がハンズオンとして分かりやすいかもと思ったが、今の方針の方がCORSについて理解を深められそうだったので今の方針のままにする。
 -->
 
 想定する動作は次のようになります。
@@ -234,10 +233,10 @@ class CORSRequestHandler(SimpleHTTPRequestHandler):
          return
 ```
 
-`Origin`リクエストヘッダーで送信された値が`valid_origins`リストに入っている場合、`Access-Control-Allow-Origin`レスポンスヘッダーにその値を設定します。
-入っていない場合は、`Access-Control-Allow-Origin`レスポンスヘッダーに`valid_origins`の値を` `（スペース）区切りで連結した値を設定します。
+`Origin`リクエストヘッダーの値が`valid_origins`リストに入っている場合、`Access-Control-Allow-Origin`レスポンスヘッダーにその値を設定します。
+入っていない場合は、`Access-Control-Allow-Origin`レスポンスヘッダーに`valid_origins`の要素を` `（スペース）区切りで連結した値を設定します。
 
-修正が完了したら、忘れずにサーバを再起動し、`https://example.com`を開いて、コンソールから以下を実行します。
+修正が完了してサーバを再起動したら、`https://example.com`を開いて、コンソールから以下を実行します。
 
 ```javascript
 let url = 'http://localhost:8003'
@@ -264,7 +263,7 @@ await fetch(url)
 > オリジン 'https://example.org' からの 'http://localhost:8003/' での fetch へのアクセスは、CORS ポリシーによってブロックされました。Access-Control-Allow-Origin ヘッダーに複数の値 'https://example.com https://exmaple.net' が含まれていますが、許可されるのは1つだけです。サーバーに有効な値のヘッダーを送信させるか、不透明な応答が必要な場合は、要求のモードを 'no-cors' に設定して、CORSを無効にしてリソースをフェッチしてください。
 
 `fetch`メソッドの実行は失敗します。
-エラーメッセージには、`Access-Control-Allow-Origin`ヘッダーに複数のオリジンが含まれているとあります。
+エラーメッセージには、`Access-Control-Allow-Origin`レスポンスヘッダーに複数のオリジンが含まれているとあります。
 
 実際に、Networkタブをみると`Access-Control-Allow-Origin`レスポンスヘッダーには複数のオリジン`https://example.com https://exmaple.net`が含まれていることが確認できます。
 
