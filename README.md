@@ -321,15 +321,8 @@ sequenceDiagram
 ```
 
 CORSをプリフライトリクエストとして実行するために、JSONをPOSTで送信する例を考えます。
-POSTによるJSONの送信では、 `Content-Type: application/json` ヘッダーを設定することで、単純リクエストになる条件から外れ、プリフライトリクエストになります。
-単純リクエスト/プリフライトリクエストの条件については、[1. CORSの種類](#1-corsの種類)の表を参照してください。
 
-```javascript
-let url = 'http://localhost:8003'
-await fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json'}, body:{}})
-```
-
-POSTによる送信を受け付けられるようにし、重複した処理を関数に切り出します。
+まずは、サーバ側でPOSTによる送信を受け付けられるようにし、重複した処理を関数に切り出します。
 
 ```diff
      def is_valid_origin(self, origin):
@@ -358,7 +351,19 @@ POSTによる送信を受け付けられるようにし、重複した処理を�
 +
 ```
 
-修正した`srv.py`を起動し直し、`https://example.com`（正しいオリジン）から`fetch`メソッドによるPOSTを実行します。
+修正が完了したら、ひとまずサーバを再起動しておきます。
+
+POSTメソッドによるJSONの送信では、`Content-Type: application/json` ヘッダーを設定することで、単純リクエストになる条件から外れ、プリフライトリクエストになります。
+
+単純リクエストとプリフライトリクエストの条件については、[1. CORSの種類](#1-corsの種類)の表を参照してください。
+
+`https://example.com`を開いて、プリフライトリクエストとなるように、以下の`fetch`メソッドをコンソールから実行します。
+
+```javascript
+let url = 'http://localhost:8003'
+await fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json'}})
+```
+
 結果は次のようになりました。
 
 ![](img/preflight-request-failed-option-console.png)
@@ -378,12 +383,18 @@ $ python3 srv.py
 ```
 
 プリフライトリクエストの場合、実際のPOSTリクエストなどが発生する前に、OPTIONSメソッドによるリクエスト/レスポンスが発生し、CORSポリシーの検査が行われます。
-この検査が通った場合のみ、ブラウザは実際のPOSTリクエストを実行します。
+この検査に通った場合のみ、ブラウザは実際のPOSTリクエストを実行します。
 
 それでは、サーバにOPTIONSメソッドを受け付けるコードを追加しましょう。
 
 ```diff
-class CORSRequestHandler(SimpleHTTPRequestHandler):
+     def do_POST(self):
+         self.send_response(201)
+         self.send_acao()
+         self.end_headers()
+         self.wfile.write(b'Nice POST!')
+         return
+
 +     def do_OPTIONS(self):
 +        self.send_acao()
 +        self.end_headers()
@@ -391,11 +402,11 @@ class CORSRequestHandler(SimpleHTTPRequestHandler):
 +
 ```
 
-`srv.py`を起動し直して、再度実行してみます。
+修正が完了してサーバを再起動したら、`https://example.com`を開いて、コンソールから以下を実行します。
 
 ```javascript
 let url = 'http://localhost:8003'
-await fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json'}, body:{}})
+await fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json'}})
 ```
 
 ![](img/preflight-request-failed-header-console.png)
@@ -408,7 +419,7 @@ MDNでは[`Access-Control-Allow-Headers`](https://developer.mozilla.org/ja/docs/
 
 > `Access-Control-Allow-Headers` レスポンスヘッダーは、 `Access-Control-Request-Headers` を含むプリフライトリクエストへのレスポンスで、実際のリクエストの間に使用できる HTTP ヘッダーを示すために使用されます。
 
-CORSでは、リクエストヘッダーを指定する場合、以下の図のようなOPTIONSメソッドのクエストが発生します。
+プリフライトリクエストでは、以下の図のようなOPTIONSメソッドのリクエストが発生します。
 
 ```mermaid
 sequenceDiagram
@@ -422,7 +433,8 @@ sequenceDiagram
 
 ```
 
-OPTIONSメソッドのリクエストの`Access-Control-Request-Headers`ヘッダーの値に、実際のリクエストで指定したヘッダー名が入ります。NetworkタブからOPTIONSメソッドによるリクエストの内容を確認することができます。
+OPTIONSメソッドのリクエストの`Access-Control-Request-Headers`ヘッダーの値に、実際のリクエストで指定したヘッダー名が入ります。
+NetworkタブからOPTIONSメソッドによるリクエストの内容を確認することができます。
 
 ![](img/preflight-request-failed-request-acrh.png)
 
@@ -471,7 +483,7 @@ CORSで許可されるヘッダーのリストを`valid_headers`変数として�
 
 ```javascript
 let url = 'http://localhost:8003'
-await fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json'}, body:{}})
+await fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json'}})
 ```
 
 ![](./img/preflight-request-success-console.png)
