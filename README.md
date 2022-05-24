@@ -115,8 +115,13 @@ await fetch(url)
 
 何やらレスポンスに`Access-Control-Allow-Origin`ヘッダーがないため`fetch`へのアクセスがブロックされたとあります。
 
-（`fetch`メソッドにおいて'no-cors'を設定したopaque responseは、リクエストが失敗したときに空のレスポンスを返すことを意味します。
-詳しくはMDNの[Fetch API](https://developer.mozilla.org/ja/docs/Web/API/Fetch_API)を参照してください。）
+---
+**_NOTE_**
+
+`fetch`メソッドにおいて'no-cors'を設定したopaque responseは、リクエストが失敗したときに空のレスポンスを返すことを意味します。
+詳しくはMDNの[Fetch API](https://developer.mozilla.org/ja/docs/Web/API/Fetch_API)を参照してください。
+
+---
 
 サーバのログを見ると、サーバ側では正常にリクエストが処理されたようです。
 
@@ -134,10 +139,10 @@ MDNでは[`Access-Control-Allow-Origin`](https://developer.mozilla.org/ja/docs/W
 > `Access-Control-Allow-Origin`レスポンスヘッダーは、指定されたオリジンからのリクエストを行うコードでレスポンスが共有できるかどうかを示します。
 
 指定されたオリジンというのは、`Origin`リクエストヘッダーの値のことです。
-通常、ブラウザは、オリジンaから外部のオリジンbに対してHTTPリクエストを送信する際、リクエストヘッダーに`Origin: a`を追加します。
+通常ブラウザは、オリジンaから外部のオリジンbに対してHTTPリクエストを送信する際、リクエストヘッダーに`Origin: a`を設定します。
 
-画像の例では`https://example.com`ページを開き、外部オリジンの`http://localhost:8003`にリクエストを送信しているため、`Origin`ヘッダーの値は`https://example.com`となります。
-しかし、それに対応するレスポンスに`Access-Control-Allow-Origin`がなかったために、ブラウザのCORS検査で失敗したのでした。
+画像の例では`https://example.com`ページを開き、外部オリジンの`http://localhost:8003`にリクエストを送信しているため、リクエストヘッダーに`Origin: https://example.com`が設定されています。
+しかし、それに対応するレスポンスに`Access-Control-Allow-Origin`ヘッダーがなかったため、ブラウザのCORS検査でリクエストが失敗したのでした。
 
 それでは、サーバに`Access-Control-Allow-Origin`ヘッダーを追加する処理を記述してみましょう。
 
