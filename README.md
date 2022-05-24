@@ -28,7 +28,7 @@ https://example.com:8080/index.html
 CORSは、リクエストの条件によって次のどちらかの動作をします。
 
 - 単純リクエスト(Simple Requests)
-- プリフライトリクエスト(Preflight requests)
+- プリフライトリクエスト(Preflight Requests)
 
 以下の両方の条件を満たすと単純リクエストとなり、満たさないとプリフライトリクエストとなります。
 
@@ -37,7 +37,7 @@ CORSは、リクエストの条件によって次のどちらかの動作をし�
 |メソッドが以下の中に含まれる|<ul><li>`GET`</li><li>`HEAD`</li><li>`POST`</li></ul>|
 |独自で設定するヘッダーが以下の中に含まれる|<ul><li>`Accept`</li><li>`Accept-Language`</li><li>`Content-Length`</li><li>`Content-Type`(以下の値のみ)<ul><li>`application/x-www-form-urlencoded`</li><li>`multipart/form-data`</li><li>` text/plain`</li></ul></ul>|
 
-さて、説明はここまでで手を動かしてみましょう。
+さて、説明はここまでにして手を動かしてみましょう。
 
 ## 2. 単純リクエストハンズオン
 
