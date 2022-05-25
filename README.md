@@ -515,5 +515,6 @@ CORSに関する主要なヘッダーについてまとめておきます。
 # 参考
 
 - [オリジン間リソース共有 (CORS)](https://developer.mozilla.org/ja/docs/Web/HTTP/CORS) とMDNにおけるその他のCORS関連ページ
+- [CORSの原理を知って正しく使おう](https://www.eg-secure.co.jp/tokumaru/youtube/36/)
 - [CORS Tutorial: A Guide to Cross-Origin Resource Sharing](https://auth0.com/blog/cors-tutorial-a-guide-to-cross-origin-resource-sharing/)
 - [Python 3: serve the current directory as HTTP while setting CORS headers for XHR debugging](https://gist.github.com/acdha/925e9ffc3d74ad59c3ea)
