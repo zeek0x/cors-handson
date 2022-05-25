@@ -103,7 +103,7 @@ await fetch(url)
 
 ![](./img/example-com-page-and-devloper-tool.png)
 
-このハンズオンでは、[`Fetch API`](https://developer.mozilla.org/ja/docs/Web/API/Fetch_API)を利用してローカルのHTTPサーバへとアクセスします。
+このハンズオンでは、[`Fetch API`](https://developer.mozilla.org/ja/docs/Web/API/Fetch_API)を利用してローカルのHTTPサーバへアクセスします。
 
 いよいよ初めてのCORSリクエストです。結果はどうなるでしょうか？
 
@@ -118,12 +118,12 @@ await fetch(url)
 ---
 **_NOTE_**
 
-`fetch`メソッドにおいて'no-cors'を設定したopaque responseは、リクエストが失敗したときに空のレスポンスを返すことを意味します。
+`fetch`メソッドにおいて`'no-cors'`を設定したopaque responseは、リクエストが失敗したときに空のレスポンスを返すことを意味します。
 詳しくはMDNの[Fetch API](https://developer.mozilla.org/ja/docs/Web/API/Fetch_API)を参照してください。
 
 ---
 
-サーバのログを見ると、サーバ側では正常にリクエストが処理されたようです。
+サーバのログを見ると、サーバ側では正常にリクエストが処理されたことが分かります。
 
 ```console
 127.0.0.1 - - [10/Aug/2022 11:45:14] "GET / HTTP/1.1" 200 -
@@ -139,7 +139,7 @@ MDNでは[`Access-Control-Allow-Origin`](https://developer.mozilla.org/ja/docs/W
 > `Access-Control-Allow-Origin`レスポンスヘッダーは、指定されたオリジンからのリクエストを行うコードでレスポンスが共有できるかどうかを示します。
 
 指定されたオリジンというのは、`Origin`リクエストヘッダーの値のことです。
-通常ブラウザは、オリジンaから外部のオリジンbに対してHTTPリクエストを送信する際、リクエストヘッダーに`Origin: a`を設定します。
+通常ブラウザは、オリジン`a`のページを開いた状態で外部のオリジン`b`に対してHTTPリクエストを行う場合、リクエストヘッダーに`Origin: a`を設定します。
 
 画像の例では`https://example.com`ページを開き、外部オリジンの`http://localhost:8003`にリクエストを送信しているため、リクエストヘッダーに`Origin: https://example.com`が設定されています。
 しかし、それに対応するレスポンスに`Access-Control-Allow-Origin`ヘッダーがなかったため、ブラウザのCORS検査でリクエストが失敗したのでした。
@@ -192,7 +192,7 @@ await (await fetch(url)).text()
 このハンズオンでは、後者の方針で進めます。
 そして、サーバ側で許可しないオリジンであった場合には、`Access-Control-Allow-Origin`ヘッダーに許可されるオリジンのリスト（スペース区切り）を設定し、レスポンスを返すこととします。
 この実装は実際にデバッグの際に役立ちますが、副作用を伴うリクエストのレスポンスには向いていません。
-また、なんらかの理由でオリジンのリストを公開したくない場合にも使えません。
+また、なんらかの理由で正しいオリジンを公開したくない場合にも使えません。
 その場合には、単に`Access-Control-Allow-Origin`レスポンスヘッダーを設定しないべきでしょう。
 
 <!--
