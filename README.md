@@ -8,6 +8,9 @@ CORSについてざっくりとした説明しかしないため、より詳細�
 
 このハンズオンではブラウザがGoogle Chromeであることを想定します。
 
+このハンズオンでは[Python3](https://www.python.org/downloads/) をローカルサーバの起動、 [ngrok](https://ngrok.com/download) をサーバのListenポートをパブリックなアドレス空間で公開するために使用します。
+事前にインストールしておきましょう。
+
 誤植や追記、内容の訂正など、どんなPRも歓迎しています。
 
 ## 1. CORSの種類
@@ -89,6 +92,14 @@ httpd.serve_forever()
 ```console
 $ python3 srv.py
 ```
+
+次に、 別の端末から ngrok でパブリックなアドレス空間にサーバのListenポートをフォワーディングしましょう。
+
+```console
+$ ngrok http 8003
+```
+
+
 
 まずは動作確認として、そのまま`http://localhost:8003`をブラウザで開いてみましょう。
 `Hello CORS!`が表示されれば動作確認完了です。
