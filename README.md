@@ -15,7 +15,8 @@ CORSについてざっくりとした説明しかしないため、より詳細�
 まずは、手を動かす前にCORSの種類についてみてみます。
 
 Cross-Origin Resource Sharing (CORS) とは、ブラウザ上で動作するスクリプトが、異なるオリジンのリソースをやり取りできるようにするためのプロトコルです。
-オリジンというのは、URL構造のうち、スキーム+ホスト+ポートのことを指します[Origin (オリジン)](https://developer.mozilla.org/ja/docs/Glossary/Origin)を参照してください。
+オリジンというのは、URL構造のうち、スキーム+ホスト+ポートのことを指します。
+詳しくは[Origin (オリジン)](https://developer.mozilla.org/ja/docs/Glossary/Origin)を参照してください。
 
 ```text
 https://example.com:8080/index.html
