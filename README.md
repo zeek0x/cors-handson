@@ -31,12 +31,13 @@ CORSは、リクエストの条件によって次のどちらかの動作をし�
 - 単純リクエスト(Simple Requests)
 - プリフライトリクエスト(Preflight Requests)
 
-以下の両方の条件を満たすと単純リクエストとなり、満たさないとプリフライトリクエストとなります。
+以下の条件を全て満たすと単純リクエストとなり、満たさないとプリフライトリクエストとなります。
 
 |条件|項目|
 |---|---|
 |メソッドが以下の中に含まれる|<ul><li>`GET`</li><li>`HEAD`</li><li>`POST`</li></ul>|
 |独自で設定するヘッダーが以下の中に含まれる|<ul><li>`Accept`</li><li>`Accept-Language`</li><li>`Content-Length`</li><li>`Content-Type`(以下の値のみ)<ul><li>`application/x-www-form-urlencoded`</li><li>`multipart/form-data`</li><li>` text/plain`</li></ul></ul>|
+|宛先アドレスが以下のアドレスレンジに含まれない|<ul><li>Local IP address space: `127.0.0.0/8`</li><li>Private IP address space: `10.0.0.0/8`, `172.16.0.0/12`,  `192.168.0.0/16` and `169.254.0.0/16`</li></ul>||
 
 さて、説明はここまでにして手を動かしてみましょう。
 
