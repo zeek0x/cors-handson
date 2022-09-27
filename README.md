@@ -40,7 +40,7 @@ CORSは、リクエストの条件によって次のどちらかの動作をし�
 |---|---|
 |メソッドが以下の中に含まれる|<ul><li>`GET`</li><li>`HEAD`</li><li>`POST`</li></ul>|
 |独自で設定するヘッダーが以下の中に含まれる|<ul><li>`Accept`</li><li>`Accept-Language`</li><li>`Content-Length`</li><li>`Content-Type`(以下の値のみ)<ul><li>`application/x-www-form-urlencoded`</li><li>`multipart/form-data`</li><li>` text/plain`</li></ul></ul>|
-|宛先アドレスが以下のアドレスレンジに含まれない|<ul><li>Local IP address space: `127.0.0.0/8`</li><li>Private IP address space: `10.0.0.0/8`, `172.16.0.0/12`,  `192.168.0.0/16` and `169.254.0.0/16`</li></ul>||
+|宛先アドレスが以下のアドレスレンジに**含まれない**|<ul><li>`127.0.0.0/8`</li><li>`10.0.0.0/8`</li><li>`172.16.0.0/12`</li><li>`192.168.0.0/16`</li><li>`169.254.0.0/16`</li></ul>||
 
 さて、説明はここまでにして手を動かしてみましょう。
 
@@ -99,9 +99,12 @@ $ python3 srv.py
 $ ngrok http 8003
 ```
 
+![](./img/ngrok-forwading.png)
 
 
-まずは動作確認として、そのまま`http://localhost:8003`をブラウザで開いてみましょう。
+`https://e294-223-218-175-212.jp.ngrok.io -> http://localhost:8003` とフォワーディングされています。 `ngrok` のドメインはコマンドの実行毎に違います。以降は、 `<ngrok_url>` と記述しますので適宜読み替えていってください。
+
+まずは動作確認として、`<ngrok_url>`をそのままブラウザでを開いてみましょう。
 `Hello CORS!`が表示されれば動作確認完了です。
 
 ![](./img/srv-operation-test.png)
@@ -110,7 +113,7 @@ $ ngrok http 8003
 そのまま以下のコードを、デベロッパーツールに入れて実行しましょう。
 
 ```javascript
-let url = 'http://localhost:8003'
+let url = '<ngrok_url>'
 await fetch(url)
 ```
 
@@ -124,7 +127,7 @@ await fetch(url)
 
 なんと！初めてのリクエストは失敗に終わってしまいました！落ち着いてエラーメッセージを読んでみましょう。
 
-> オリジン 'https://example.com' からの 'http://localhost:8003/' でのfetchへのアクセスは、CORS ポリシーによってブロックされました。要求されたリソースに 'Access-Control-Allow-Origin' ヘッダーが存在しません。opaque responseが必要な場合は、リクエストのmodeに'no-cors'を設定して、CORSを無効にしてリソースをフェッチしてください。
+> オリジン 'https://example.com' からの 'https://e294-223-218-175-212.jp.ngrok.io/' でのfetchへのアクセスは、CORS ポリシーによってブロックされました。要求されたリソースに 'Access-Control-Allow-Origin' ヘッダーが存在しません。opaque responseが必要な場合は、リクエストのmodeに'no-cors'を設定して、CORSを無効にしてリソースをフェッチしてください。
 
 何やらレスポンスに`Access-Control-Allow-Origin`ヘッダーがないため`fetch`へのアクセスがブロックされたとあります。
 
@@ -154,7 +157,7 @@ MDNでは[`Access-Control-Allow-Origin`](https://developer.mozilla.org/ja/docs/W
 指定されたオリジンというのは、`Origin`リクエストヘッダーの値のことです。
 通常ブラウザは、オリジン`a`のページを開いた状態で外部のオリジン`b`に対してHTTPリクエストを行う場合、リクエストヘッダーに`Origin: a`を設定します。
 
-画像の例では`https://example.com`ページを開き、外部オリジンの`http://localhost:8003`にリクエストを送信しているため、リクエストヘッダーに`Origin: https://example.com`が設定されています。
+画像の例では`https://example.com`ページを開き、外部オリジンの`https://e294-223-218-175-212.jp.ngrok.io`にリクエストを送信しているため、リクエストヘッダーに`Origin: https://example.com`が設定されています。
 しかし、それに対応するレスポンスに`Access-Control-Allow-Origin`ヘッダーがなかったため、ブラウザのCORS検査でリクエストが失敗したのでした。
 
 それでは、サーバに`Access-Control-Allow-Origin`ヘッダーを追加する処理を記述してみましょう。
@@ -173,7 +176,7 @@ MDNでは[`Access-Control-Allow-Origin`](https://developer.mozilla.org/ja/docs/W
 修正が完了してサーバを再起動したら、先ほどと同様に`fetch`メソッドを呼び出してみましょう。
 
 ```javascript
-let url = 'http://localhost:8003'
+let url = '<ngrok_url>'
 await fetch(url)
 ```
 
@@ -252,7 +255,7 @@ class CORSRequestHandler(SimpleHTTPRequestHandler):
 修正が完了してサーバを再起動したら、`https://example.com`を開いて、コンソールから以下を実行します。
 
 ```javascript
-let url = 'http://localhost:8003'
+let url = '<ngrok_url>'
 await fetch(url)
 ```
 
@@ -267,13 +270,13 @@ Networkタブを見てみると`Origin`リクエストヘッダーの値と`Acce
 次に、許可されてないオリジンからリクエストを送信してみます。`https://example.org`を開いて、同じようにコンソールで以下のコードを実行します。
 
 ```javascript
-let url = 'http://localhost:8003'
+let url = '<ngrok_url>'
 await fetch(url)
 ```
 
 ![](img/validate-origin-fetch-error-console.png)
 
-> オリジン 'https://example.org' からの 'http://localhost:8003/' での fetch へのアクセスは、CORS ポリシーによってブロックされました。Access-Control-Allow-Origin ヘッダーに複数の値 'https://example.com https://exmaple.net' が含まれていますが、許可されるのは1つだけです。サーバーに有効な値のヘッダーを送信させるか、不透明な応答が必要な場合は、要求のモードを 'no-cors' に設定して、CORSを無効にしてリソースをフェッチしてください。
+> オリジン 'https://example.org' からの 'https://3bb3-103-115-217-50.jp.ngrok.io/' での fetch へのアクセスは、CORS ポリシーによってブロックされました。Access-Control-Allow-Origin ヘッダーに複数の値 'https://example.com https://exmaple.net' が含まれていますが、許可されるのは1つだけです。サーバーに有効な値のヘッダーを送信させるか、不透明な応答が必要な場合は、要求のモードを 'no-cors' に設定して、CORSを無効にしてリソースをフェッチしてください。
 
 `fetch`メソッドの実行は失敗します。
 エラーメッセージには、`Access-Control-Allow-Origin`レスポンスヘッダーに複数のオリジンが含まれているとあります。
@@ -295,7 +298,7 @@ await fetch(url)
 
 ![](img/validate-origin-single-invalid-origin-console.png)
 
-> オリジン 'https://example.org' からの 'http://localhost:8003/' でのフェッチへのアクセスは、CORS ポリシーによってブロックされました。'Access-Control-Allow-Origin' ヘッダーの値 'https://example.com' は指定されたオリジンと同じではありません。サーバーに有効な値のヘッダーを送信させるか、不透明な応答が必要な場合は、要求のモードを 'no-cors' に設定して、CORS を無効にしてリソースをフェッチしてください。
+> オリジン 'https://example.org' からの 'https://e294-223-218-175-212.jp.ngrok.io/' でのフェッチへのアクセスは、CORS ポリシーによってブロックされました。'Access-Control-Allow-Origin' ヘッダーの値 'https://example.com' は指定されたオリジンと同じではありません。サーバーに有効な値のヘッダーを送信させるか、不透明な応答が必要な場合は、要求のモードを 'no-cors' に設定して、CORS を無効にしてリソースをフェッチしてください。
 
 また、`Access-Control-Allow-Origin`ヘッダーを返さないケースは、[2. 単純リクエストハンズオン](#2-単純リクエストハンズオン)の最初のリクエストの結果を参照してください。
 
@@ -373,7 +376,7 @@ POSTメソッドによるJSONの送信では、`Content-Type: application/json` 
 `https://example.com`を開いて、プリフライトリクエストとなるように、以下の`fetch`メソッドをコンソールから実行します。
 
 ```javascript
-let url = 'http://localhost:8003'
+let url = '<ngrok_url>'
 await fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json'}})
 ```
 
@@ -381,7 +384,7 @@ await fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json'}}
 
 ![](img/preflight-request-failed-option-console.png)
 
-> オリジン 'https://example.com' からの 'http://localhost:8003/' でのfetchへのアクセスは、CORS ポリシーによってブロックされました。プリフライトリクエストへのレスポンスがアクセス制御チェックを通過しません。要求されたリソースに 'Access-Control-Allow-Origin' ヘッダーが存在しません。不透明な応答が必要な場合は、要求のモードを'no-cors'に設定して、CORS を無効にしてリソースをフェッチします。
+> オリジン 'https://example.com' からの 'https://3bb3-103-115-217-50.jp.ngrok.io/' でのfetchへのアクセスは、CORS ポリシーによってブロックされました。プリフライトリクエストへのレスポンスがアクセス制御チェックを通過しません。要求されたリソースに 'Access-Control-Allow-Origin' ヘッダーが存在しません。不透明な応答が必要な場合は、要求のモードを'no-cors'に設定して、CORS を無効にしてリソースをフェッチします。
 
 プリフライトリクエストのアクセス制御チェックを通過できなかったとあります。
 また、NetworkタブやサーバのログからOPTIONSメソッドによるリクエストが送信され、ステータスコード501(Not Implemented Error)が返っていることが確認できます。
@@ -409,6 +412,7 @@ $ python3 srv.py
          return
 
 +     def do_OPTIONS(self):
++        self.send_response(200)
 +        self.send_acao()
 +        self.end_headers()
 +        return
@@ -418,13 +422,13 @@ $ python3 srv.py
 修正が完了してサーバを再起動したら、`https://example.com`を開いて、コンソールから以下を実行します。
 
 ```javascript
-let url = 'http://localhost:8003'
+let url = '<ngrok_url>'
 await fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json'}})
 ```
 
 ![](img/preflight-request-failed-header-console.png)
 
-> オリジン 'https://example.com' からの 'http://localhost:8003/' での fetch へのアクセスは、CORS ポリシーによってブロックされました。リクエストヘッダーフィールドの content-type は、プリフライトレスポンスの Access-Control-Allow-Headers によって許可されていません。
+> オリジン 'https://example.com' からの 'https://3bb3-103-115-217-50.jp.ngrok.io/' での fetch へのアクセスは、CORS ポリシーによってブロックされました。リクエストヘッダーフィールドの content-type は、プリフライトレスポンスの Access-Control-Allow-Headers によって許可されていません。
 
 またもやリクエストは失敗してしまいました。
 エラーメッセージには`content-type`リクエストヘッダーが `Access-Control-Allow-Headers`によって許可されていないとあります（HTTPヘッダーはcase-insensitive（大文字・小文字を区別しない）なので、`Contnet-Type`と`content-type`表記のどちらでもよい）。
@@ -495,7 +499,7 @@ CORSで許可されるヘッダーのリストを`valid_headers`変数として�
 再度、実行してみましょう。
 
 ```javascript
-let url = 'http://localhost:8003'
+let url = '<ngrok_url>'
 await fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json'}})
 ```
 
@@ -517,10 +521,12 @@ CORSに関する主要なヘッダーについてまとめておきます。
 |`Origin`|リクエスト|`Access-Control-Allow-Origin`|実際のリクエストの送信元のオリジンを示す|
 |`Access-Control-Request-Headers`|リクエスト|`Access-Control-Allow-Headers`|実際のリクエストで指定されるヘッダーを示す|
 |`Access-Control-Request-Method`|リクエスト|`Access-Control-Allow-Method`|実際のリクエストが行われた際にどの HTTPメソッドが使われるかを示す|
+|`Access-Control-Request-Private-Network`|リクエスト|`Access-Control-Allow-Private-Network`|リクエストがプライベートネットワークリクエストであることを示します。
 |`Access-Control-Allow-Origin`|レスポンス|`Origin`|実際のリクエストのレスポンスで共有を許可するオリジンを示す|
 |`Access-Control-Allow-Headers`|レスポンス|`Access-Control-Request-Headers`|実際のリクエストで指定が許可されるヘッダーを示す|
 |`Access-Control-Allow-Method`|レスポンス|`Access-Control-Request-Method`|実際のリクエストでリソースへのアクセスが許可されるHTTPメソッドを示す|
 |`Access-Control-Max-Age`|レスポンス|-| `Access-Control-Allow-Methods`および `Access-Control-Allow-Headers`ヘッダーの情報をキャッシュすることができる時間（秒）の長さを示す|
+|`Access-Control-Allow-Private-Network`|レスポンス|`Access-Control-Request-Private-Network`|リソースを外部ネットワークと安全に共有できることを示す|
 
 <!-- Access-Control-Allow-Credentials も入れるか？ -->
 <!-- これを読んでる方へ Access-Control-*-Method の章を書いてください :D -->
@@ -531,3 +537,4 @@ CORSに関する主要なヘッダーについてまとめておきます。
 - [CORSの原理を知って正しく使おう](https://www.eg-secure.co.jp/tokumaru/youtube/36/)
 - [CORS Tutorial: A Guide to Cross-Origin Resource Sharing](https://auth0.com/blog/cors-tutorial-a-guide-to-cross-origin-resource-sharing/)
 - [Python 3: serve the current directory as HTTP while setting CORS headers for XHR debugging](https://gist.github.com/acdha/925e9ffc3d74ad59c3ea)
+- [Private Network Access: introducing preflights](https://developer.chrome.com/blog/private-network-access-preflight/)
